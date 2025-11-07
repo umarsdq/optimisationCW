@@ -1,0 +1,113 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\title{MATH60005/70005 Optimisation Coursework}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Part I: Gradient-Enhanced Polynomial Regression}
+
+\subsection*{I.a)}
+
+The problem is to fit a polynomial model of the form $V_\theta(x) = \sum_{j=0}^{n} \theta_j \phi_j(x)$ to the given training data. The basis functions are monomials, so $\phi_j(x) = x^j$. This can be formulated as a least squares problem $\min_{\theta \in \mathbb{R}^{n+1}} \|A\theta - b\|_2^2$, where $A$ is the Vandermonde matrix constructed from the training data `trainingIa.dat`, and $b$ is the vector of observed values.
+
+We iterate through polynomial degrees $n=1, 2, \dots, 20$, solve for $\theta$ using the training data, and then calculate the Mean Squared Error (MSE) on the validation data `validationIa.dat`. The smallest degree $n$ for which the MSE is less than $10^{-3}$ is found to be $n=9$.
+
+The plot of the MSE on the validation data versus the polynomial degree $n$ is shown in Figure~\ref{fig:mse_vs_degree}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/mse_vs_degree.png}
+\caption{MSE vs. Polynomial Degree}
+\label{fig:mse_vs_degree}
+\end{figure}
+
+\subsection*{I.b)}
+
+In this part, we augment the training data with gradient information. The least squares problem is reformulated to include both the function values and their derivatives. This results in a larger linear system, where the matrix $A$ and vector $b$ are constructed by stacking the contributions from the function values and the gradients.
+
+Repeating the analysis from Part I.a with the new training data `trainingIb.dat`, we find that the smallest degree $n$ for which the MSE on the validation data is less than $10^{-3}$ is still $n=9$. However, as shown in Figure~\ref{fig:mse_comparison}, the MSE for the gradient-enhanced regression is generally lower for the same polynomial degree, and the curve is smoother, indicating a better-conditioned problem.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/mse_comparison.png}
+\caption{MSE vs. Polynomial Degree (With and Without Gradient Information)}
+\label{fig:mse_comparison}
+\end{figure}
+
+\section*{Part II: A First Approach to Dynamic Optimisation}
+
+\subsection*{II.a)}
+
+The dynamic optimisation problem is given by:
+\[ \min_{\mathbf{u} \in \mathbb{R}^N} \|\mathbf{x}^u\|_2^2 + \gamma \|\mathbf{u}\|_2^2 \]
+subject to $x_0 = \bar{x}$, $x_i = a x_{i-1} + b u_i$ for $i=1, \dots, N$.
+
+We can express the state $\mathbf{x}^u$ in terms of the control $\mathbf{u}$. This can be written in matrix form as $\mathbf{x}^u = S \mathbf{u} + \mathbf{c}$, where $S$ is a lower triangular matrix and $\mathbf{c}$ is a vector dependent on the initial condition. The objective function can then be written as a standard regularised linear least squares problem. The solution is given by the normal equations:
+\[ (S^T S + \gamma I) \mathbf{u} = -S^T \mathbf{c} \]
+For $\gamma > 0$, the matrix $S^T S + \gamma I$ is positive definite, and therefore invertible, which guarantees a unique solution. The plots of the optimal control signals and state trajectories for different values of $\gamma$ are shown in Figure~\ref{fig:dynopt_a}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/dynamic_optimisation_a.png}
+\caption{Optimal control and state trajectories for different values of $\gamma$.}
+\label{fig:dynopt_a}
+\end{figure}
+
+As $\gamma$ increases, the penalty on the control effort increases, leading to smaller control signals and larger state trajectories.
+
+\subsection*{II.b)}
+
+In this part, we have a coupled system with two states, $\mathbf{x}$ and $\mathbf{y}$, and two controls, $\mathbf{u}$ and $\mathbf{v}$. The objective function is to minimise the norm of the states and the difference between the controls. This can be formulated as a regularised least squares problem, which can be solved by setting the gradient to zero. The resulting state trajectories for $\gamma=1$ are shown in Figure~\ref{fig:dynopt_b}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/dynamic_optimisation_b.png}
+\caption{State trajectories for the coupled system with $\gamma=1$.}
+\label{fig:dynopt_b}
+\end{figure}
+
+\subsection*{II.c)}
+
+The Pareto front for the two objectives $J_1 = \|\mathbf{x}^*\|_2^2 + \|\mathbf{y}^*\|_2^2$ and $J_2 = \|\mathbf{u}^* - \mathbf{v}^*\|_2^2$ is shown in Figure~\ref{fig:pareto}. The plot shows the trade-off between the two objectives.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/pareto_front.png}
+\caption{Pareto front for the multi-objective optimisation problem.}
+\label{fig:pareto}
+\end{figure}
+
+\subsection*{II.d)}
+
+The function $L_\epsilon(z)$ is a smooth approximation of the absolute value function $|z|$, which allows us to use gradient-based methods for L1-regularisation. We use a gradient descent algorithm to solve the optimisation problem with the smoothed L1-norm regularisation. The resulting control signals and state trajectories for the three cases are shown in Figure~\ref{fig:l1_controls} and Figure~\ref{fig:l1_states}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/L1_controls.png}
+\caption{Control signals for the three cases in Part II.d.}
+\label{fig:l1_controls}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/L1_states.png}
+\caption{State trajectories for the three cases in Part II.d.}
+\label{fig:l1_states}
+\end{figure}
+
+\textbf{Observations:}
+\begin{itemize}
+    \item \textbf{Case i ($\gamma_1=0, \gamma_2=1$):} This is the same as Part II.b, with only the L2 regularisation. The control signals are smooth and non-zero.
+    \item \textbf{Case ii ($\gamma_1=1, \gamma_2=0, \epsilon=1$):} With the L1 regularisation and a large $\epsilon$, the approximation is not very accurate, and the control signals are not sparse.
+    \item \textbf{Case iii ($\gamma_1=1, \gamma_2=0, \epsilon=0.1$):} With a smaller $\epsilon$, the approximation is better, and the L1 regularisation promotes sparsity in the control signals, as expected.
+\end{itemize}
+
+\end{document}
