@@ -28,7 +28,7 @@ The problem is to fit a polynomial model of the form $V_\theta(x) = \sum_{j=0}^{
 
 where $A$ is the Vandermonde matrix constructed from the training data \texttt{trainingIa.dat}, and $b$ is the vector of observed values. Specifically, $A_{ij} = x_i^j$ for $i=1,\ldots,m$ (training points) and $j=0,\ldots,n$ (polynomial degree).
 
-\textbf{General and precise expressions for $A$ and $b$:}
+\textbf{General and precise expressions for $A$ and $b$}
 
 For $m$ training data points $(x_i, V(x_i))$, $i=1,\ldots,m$:
 \begin{itemize}
@@ -36,7 +36,7 @@ For $m$ training data points $(x_i, V(x_i))$, $i=1,\ldots,m$:
     \item Vector $b \in \mathbb{R}^m$ with $b_i = V(x_i)$
 \end{itemize}
 
-\textbf{Finding the smallest $n$ for MSE $< 10^{-3}$:}
+\textbf{Finding the smallest $n$ for MSE $< 10^{-3}$}
 
 We iterate through polynomial degrees $n=1, 2, \dots, 20$, solve for $\theta$ using the training data, and then calculate the Mean Squared Error (MSE) on the validation data \texttt{validationIa.dat}. The smallest degree $n$ for which the MSE is less than $10^{-3}$ is found to be $\mathbf{n=9}$.
 
@@ -49,9 +49,28 @@ The plot of the MSE on the validation data versus the polynomial degree $n$ is s
 \label{fig:mse_vs_degree}
 \end{figure}
 
+\subsubsection*{Additional Analysis (as required by instructions)}
+
+Fixing the value of $n=9$, we plot the MSE on the validation data versus the number of training points used from \texttt{trainingIa.dat}. Figure~\ref{fig:mse_vs_size_a} shows that, as expected, the error generally decreases as we use more training data. Figure~\ref{fig:learned_function_a} shows the final learned function plotted against the training and validation data.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/mse_vs_training_size_a.png}
+\caption{MSE on validation data vs. number of training points for Part I.a (fixed $n=9$)}
+\label{fig:mse_vs_size_a}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/learned_function_a.png}
+\caption{Learned polynomial function for Part I.a at $n=9$}
+\label{fig:learned_function_a}
+\end{figure}
+
+
 \subsection*{I.b) [4 marks]}
 
-\textbf{Reformulating the problem with gradient information:}
+\textbf{Reformulating the problem with gradient information}
 
 In this part, we augment the training data with gradient information. Using the same model $V_\theta(\mathbf{x})$ and monomial basis $\Phi(x) = (1, x, x^2, \ldots, x^n)^T$, we reformulate the linear least squares problem to incorporate both function values and gradient data $\frac{dV}{dx}(\mathbf{x}_i)$ from \texttt{trainingIb.dat}.
 
@@ -62,7 +81,7 @@ The gradient of the model is:
 
 We construct a stacked system:
 \[
-\min_{\theta} \left\| \begin{bmatrix} A_{\text{fit}} \\ A_{\text{grad}} \end{bmatrix} \theta - \begin{bmatrix} b_{\text{fit}} \\ b_{\text{grad}} \end{bmatrix} \right\|_2^2
+\min_\theta \left\| \begin{bmatrix} A_{\text{fit}} \\ A_{\text{grad}} \end{bmatrix} \theta - \begin{bmatrix} b_{\text{fit}} \\ b_{\text{grad}} \end{bmatrix} \right\|_2^2
 \]
 
 where $A_{\text{fit}}$ is the Vandermonde matrix as before, $A_{\text{grad}}$ has entries $(A_{\text{grad}})_{ij} = j \cdot x_i^{j-1}$ for $j \geq 1$ and 0 for $j=0$, $b_{\text{fit}}$ contains the function values, and $b_{\text{grad}}$ contains the gradient values.
@@ -102,7 +121,7 @@ The inclusion of gradient information significantly improves the conditioning of
 
 \subsection*{II.a) [3 marks]}
 
-\textbf{Reformulate (DO) as a regularised linear least squares problem for $\mathbf{u}$:}
+\textbf{Reformulate (DO) as a regularised linear least squares problem for $\mathbf{u}$}
 
 The dynamic optimisation problem is given by:
 \[ \min_{\mathbf{u} \in \mathbb{R}^N} \|\mathbf{x}^u\|_2^2 + \gamma \|\mathbf{u}\|_2^2 \]
@@ -111,9 +130,7 @@ subject to $x_0 = \bar{x}$, $x_i = a x_{i-1} + b u_i$ for $i=1, \dots, N$.
 We can express the state $\mathbf{x}^u$ in terms of the control $\mathbf{u}$ by unrolling the dynamics:
 \begin{align*}
 x_1 &= ax_0 + bu_1 = a\bar{x} + bu_1 \\
-x_2 &= ax_1 + bu_2 = a^2\bar{x} + abu_1 + bu_2 \\
-&\vdots \\
-x_i &= a^i\bar{x} + b\sum_{j=1}^{i} a^{i-j}u_j
+x_2 &= ax_1 + bu_2 = a^2\bar{x} + abu_1 + bu_2 \\&\vdots \\x_i &= a^i\bar{x} + b\sum_{j=1}^{i} a^{i-j}u_j
 \end{align*}
 
 This can be written in matrix form as $\mathbf{x}^u = S \mathbf{u} + \mathbf{c}$, where:
@@ -124,7 +141,7 @@ This can be written in matrix form as $\mathbf{x}^u = S \mathbf{u} + \mathbf{c}$
 
 The objective function becomes:
 \[
-\|\mathbf{x}^u\|_2^2 + \gamma \|\mathbf{u}\|_2^2 = \|S\mathbf{u} + \mathbf{c}\|_2^2 + \gamma \|\mathbf{u}\|_2^2
+\|S\mathbf{u} + \mathbf{c}\|_2^2 + \gamma \|\mathbf{u}\|_2^2
 \]
 
 Taking the gradient with respect to $\mathbf{u}$ and setting to zero gives the normal equations:
@@ -136,7 +153,11 @@ For $\gamma > 0$, the matrix $S^T S + \gamma I$ is symmetric and positive defini
 
 For $\gamma = 0$, uniqueness depends on the rank of $S$. If $S$ is full rank (which it is in our case since $b \neq 0$ and the system is controllable), then $S^T S$ is positive definite and a unique solution exists.
 
-\textbf{Plots and observations:}
+\textbf{Proof of smaller norm for regularised solution:}
+
+\textit{[Your proof here. Show that any $\mathbf{u}^*$ solving the regularised problem satisfies $\|\mathbf{u}^*\|_2 \leq \|\mathbf{u}\|_2$ for any $\mathbf{u}$ solving the unregularised problem.]}
+
+\textbf{Plots and observations}
 
 For $N = 50$, $a = 1$, $b = -0.01$, $\bar{x} = 1$, the plots of the optimal control signals and state trajectories for different values of $\gamma = 10^{-3}, 10^{-2}, 0.1, 1$ are shown in Figure~\ref{fig:dynopt_a}.
 
@@ -204,13 +225,20 @@ S_x^T S_x + \gamma I & -\gamma I \\
 
 \textbf{Plots:}
 
-For the parameters $N = 50$, $a = 1$, $b = 0.05$, $\bar{x} = 1$, $c = 0.2$, $d = -0.5$, $\bar{y} = 1$, $\gamma = 1$, the resulting state trajectories for $\gamma=1$ are shown in Figure~\ref{fig:dynopt_b}.
+For the parameters $N = 50$, $a = 1$, $b = 0.05$, $\bar{x} = 1$, $c = 0.2$, $d = -0.5$, $\bar{y} = 1$, $\gamma = 1$, the resulting state trajectories and control signals for $\gamma=1$ are shown in Figures~\ref{fig:dynopt_b_states} and \ref{fig:dynopt_b_controls}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{plots/dynamic_optimisation_b.png}
+\includegraphics[width=0.8\textwidth]{plots/dynamic_optimisation_b_states.png}
 \caption{State trajectories for the coupled system with $\gamma=1$.}
-\label{fig:dynopt_b}
+\label{fig:dynopt_b_states}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/dynamic_optimisation_b_controls.png}
+\caption{Control signals for the coupled system with $\gamma=1$.}
+\label{fig:dynopt_b_controls}
 \end{figure}
 
 \subsection*{II.c) [4 marks]}
@@ -223,7 +251,7 @@ Using the same parameters as in Part II.b, if we fix every parameter except for 
 \mathcal{J}_2(\gamma) &:= \|\mathbf{u}^*(\gamma) - \mathbf{v}^*(\gamma)\|_2^2
 \end{align*}
 
-By varying $\gamma$ from $10^{-2}$ to $10^2$ (with exponent increasing in steps of 0.1), we compute the corresponding optimal solutions and evaluate both functionals. The plot of $(\mathcal{J}_1(\gamma), \mathcal{J}_2(\gamma))$ is shown in Figure~\ref{fig:pareto}.
+By varying $\gamma$ from $10^{-5}$ to $10^5$, we compute the corresponding optimal solutions and evaluate both functionals. The plot of $(\mathcal{J}_2(\gamma), \mathcal{J}_1(\gamma))$ is shown in Figure~\ref{fig:pareto}. The behavior of each objective function with respect to $\gamma$ is shown in Figures~\ref{fig:j1_vs_gamma} and \ref{fig:j2_vs_gamma}.
 
 \textbf{What is this curve known as in multi-objective optimization?}
 
@@ -246,6 +274,20 @@ The Pareto front shows the fundamental trade-off: we cannot simultaneously minim
 \label{fig:pareto}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/j1_vs_gamma.png}
+\caption{Objective $\mathcal{J}_1$ vs. $\gamma$.}
+\label{fig:j1_vs_gamma}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/j2_vs_gamma.png}
+\caption{Objective $\mathcal{J}_2$ vs. $\gamma$.}
+\label{fig:j2_vs_gamma}
+\end{figure}
+
 \subsection*{II.d) [4 marks]}
 
 \textbf{Explain the meaning of $L_\epsilon(u_i)$ as a regulariser. Is it a differentiable function?}
@@ -259,7 +301,7 @@ L_\epsilon(u_i) =
 \end{cases}
 \]
 
-As a regulariser, $L_\epsilon$ promotes sparsity in the control signal (similar to L1 regularisation) but is smooth everywhere, making it suitable for gradient-based optimization methods. 
+\textit{[Explain in your own words here. As a regulariser, $L_\epsilon$ promotes sparsity in the control signal (similar to L1 regularisation) but is smooth everywhere, making it suitable for gradient-based optimization methods.]}
 
 \textbf{Is it differentiable?} Yes, $L_\epsilon$ is differentiable everywhere with gradient:
 \[
@@ -272,14 +314,16 @@ As a regulariser, $L_\epsilon$ promotes sparsity in the control signal (similar 
 
 \textbf{Implementation and results:}
 
-We implement a gradient descent method with constant step size to solve:
+We implement a gradient descent method to solve:
 \[
-\min_{(\mathbf{u},\mathbf{v}) \in \mathbb{R}^{2N}} \|\mathbf{x}\|_2^2 + \|\mathbf{y}\|_2^2 + \gamma_2\|\mathbf{u} - \mathbf{v}\|_2^2 + \gamma_1\|\mathbf{u} - \mathbf{v}\|_1
+\min_{(\mathbf{u},\mathbf{v}) \in \mathbb{R}^{2N}} \|\mathbf{x}\|_2^2 + \|\mathbf{y}\|_2^2 + \gamma_2\|\mathbf{u} - \mathbf{v}\|_2^2 + \gamma_1\sum_{i=1}^N L_\epsilon(u_i - v_i)
 \]
 
-where the L1 norm is approximated using $\sum_{i=1}^N L_\epsilon(u_i - v_i)$.
+\textbf{Gradient Descent Settings:}
 
-Using the same parameters as Part II.b, we compare three cases:
+\textit{[Describe your settings here. e.g., Learning rate = $10^{-4}$, Number of iterations = 10000.]}
+
+Using the same parameters as Part II.b, we compare three cases. The resulting control signals and state trajectories are shown in Figures~\ref{fig:l1_controls} and \ref{fig:l1_states}.
 
 \begin{figure}[H]
 \centering
@@ -295,17 +339,15 @@ Using the same parameters as Part II.b, we compare three cases:
 \label{fig:l1_states}
 \end{figure}
 
-\textbf{Observations:}
+\textbf{What do you observe?}
+
+\textit{[Your observations here. Compare the three cases.]}
 \begin{itemize}
     \item \textbf{Case i ($\epsilon=1, \gamma_2=1, \gamma_1=0$):} This is the same as Part II.b, with only the L2 regularisation $\gamma_2\|\mathbf{u} - \mathbf{v}\|_2^2$. The control signals are smooth and non-zero throughout, as there is no sparsity-promoting term.
     
     \item \textbf{Case ii ($\epsilon=1, \gamma_2=0, \gamma_1=1$):} With L1 regularisation ($\gamma_1=1$) but a large smoothing parameter ($\epsilon=1$), the approximation $L_\epsilon$ is not very accurate to the true L1 norm. The control signals show some reduction in magnitude but are not truly sparse, as the smoothing effect is too strong.
     
-    \item \textbf{Case iii ($\epsilon=0.1, \gamma_2=0, \gamma_1=1$):} With a smaller $\epsilon=0.1$, the approximation $L_\epsilon$ is much closer to the true L1 norm. The L1 regularisation now effectively promotes sparsity in the control penalty $\|\mathbf{u} - \mathbf{v}\|_1$, leading to control signals that are closer to zero or exhibit more structure. This demonstrates the expected behavior of L1 regularisation in producing sparse solutions.
+    \item \textbf{Case iii ($\epsilon=0.1, \gamma_2=0, \gamma_1=1$):} With a smaller $\epsilon=0.1$, the approximation $L_\epsilon$ is much closer to the true L1 norm. The L1 regularisation now effectively promotes sparsity in the control penalty $\|\mathbf{u} - \mathbf{v}\|_1$, leading to control signals that are closer to zero or exhibit more structure. This demonstrates the expected behavior of L1 regularisation in producing sparse solutions. The key observation is that the choice of $\epsilon$ is critical for the effectiveness of the L1 approximation.
 \end{itemize}
-
-\textbf{What do you observe?}
-
-The key observation is that the choice of $\epsilon$ is critical for the effectiveness of the L1 approximation. When $\epsilon$ is too large (Case ii), the smoothing dominates and we lose the sparsity-promoting property. When $\epsilon$ is appropriately small (Case iii), the L1 character emerges and we see the desired sparsity pattern. This illustrates the trade-off between smoothness (needed for gradient methods) and accuracy of the L1 approximation.
 
 \end{document}
