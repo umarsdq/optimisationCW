@@ -18,7 +18,7 @@
 
 \section*{Part I: Gradient-Enhanced Polynomial Regression}
 
-\subsection*{I.a) [3 marks]}
+\subsection*{I.a)}
 
 The problem is to fit a polynomial model of the form $V_\theta(x) = \sum_{j=0}^{n} \theta_j \phi_j(x)$ to the given training data. The basis functions are monomials, so $\phi_j(x) = x^j$. This can be formulated as a least squares problem 
 
@@ -44,8 +44,6 @@ The plot of the MSE on the validation data versus the polynomial degree $n$ is s
 \label{fig:mse_vs_degree}
 \end{figure}
 
-\subsubsection*{Additional Analysis (as required by instructions)}
-
 Fixing the value of $n=9$, we plot the MSE on the validation data versus the number of training points used from \texttt{trainingIa.dat}. Figure~\ref{fig:mse_vs_size_a} shows that, as expected, the error generally decreases as we use more training data. Figure~\ref{fig:learned_function_a} shows the final learned function plotted against the training and validation data.
 
 \begin{figure}[H]
@@ -63,7 +61,7 @@ Fixing the value of $n=9$, we plot the MSE on the validation data versus the num
 \end{figure}
 
 
-\subsection*{I.b) [4 marks]}
+\subsection*{I.b)}
 
 In this part, we augment the training data with gradient information. Using the same model $V_\theta(\mathbf{x})$ and monomial basis $\Phi(x) = (1, x, x^2, \ldots, x^n)^T$, we reformulate the linear least squares problem to incorporate both function values and gradient data $\frac{dV}{dx}(\mathbf{x}_i)$ from \texttt{trainingIb.dat}.
 
@@ -109,7 +107,7 @@ The inclusion of gradient information significantly improves the conditioning of
 
 \section*{Part II: A First Approach to Dynamic Optimisation}
 
-\subsection*{II.a) [3 marks]}
+\subsection*{II.a)}
 
 The dynamic optimisation problem is given by:
 \[ \min_{\mathbf{u} \in \mathbb{R}^N} \|\mathbf{x}^u\|_2^2 + \gamma \|\mathbf{u}\|_2^2 \]
@@ -163,7 +161,7 @@ As $\gamma$ increases, the penalty on the control effort $\|\mathbf{u}\|_2^2$ be
     \item \textbf{Trade-off:} There is a clear trade-off between control effort and state regulation. Higher $\gamma$ prioritizes control economy over state minimization.
 \end{itemize}
 
-\subsection*{II.b) [2 marks]}
+\subsection*{II.b)}
 
 In this part, we consider a second system $(S')$ with dynamics:
 \[
@@ -225,7 +223,7 @@ For the parameters $N = 50$, $a = 1$, $b = 0.05$, $\bar{x} = 1$, $c = 0.2$, $d =
 \label{fig:dynopt_b_controls}
 \end{figure}
 
-\subsection*{II.c) [4 marks]}
+\subsection*{II.c)}
 
 Using the same parameters as in Part II.b, if we fix every parameter except for $\gamma$, we obtain different optimal solutions $(\mathbf{u}^*, \mathbf{v}^*)$ for each value of $\gamma$. We consider the two objective functionals:
 \begin{align*}
@@ -266,7 +264,7 @@ The Pareto front shows the fundamental trade-off: we cannot simultaneously minim
 \label{fig:j2_vs_gamma}
 \end{figure}
 
-\subsection*{II.d) [4 marks]}
+\subsection*{II.d)}
 
 \textbf{Explain the meaning of $L_\epsilon(u_i)$ as a regulariser. Is it a differentiable function?}
 
@@ -297,7 +295,29 @@ We implement a gradient descent method to solve:
 \min_{(\mathbf{u},\mathbf{v}) \in \mathbb{R}^{2N}} \|\mathbf{x}\|_2^2 + \|\mathbf{y}\|_2^2 + \gamma_2\|\mathbf{u} - \mathbf{v}\|_2^2 + \gamma_1\sum_{i=1}^N L_\epsilon(u_i - v_i)
 \]
 
-...
+The method updates the control signals $u$ and $v$ using the following gradients:
+\begin{align*}
+    \nabla_u J &= 2 S_x^T (S_x u + c_x) + 2 \gamma_2 (u - v) + \gamma_1 \nabla_z L_\epsilon(u - v) \\
+    \nabla_v J &= 2 S_y^T (S_y v + c_y) - 2 \gamma_2 (u - v) - \gamma_1 \nabla_z L_\epsilon(u - v)
+\end{align*}
+These gradients are derived from an objective function that aims to minimize the state norms ($\|x\|^2$ and $\|y\|^2$), along with $L_2$ and $L_1$ regularization terms on the difference between the controls weighted by $\gamma_2$ and $\gamma_1$ respectively.
+
+The term $\nabla_z L_\epsilon(z)$ is a smoothed gradient of the $L_1$ norm, defined as:
+\[
+\nabla_z L_\epsilon(z)_i = \begin{cases}
+    z_i / \epsilon & \text{if } |z_i| \le \epsilon \\
+    \text{sign}(z_i) & \text{if } |z_i| > \epsilon
+\end{cases}
+\]
+This approximation is used to make the $L_1$ norm differentiable for the optimization process. The specific settings used for the Gradient Descent algorithm were as follows:
+\begin{itemize}
+    \item \textbf{Learning Rate:} The step size at each iteration was set to $\alpha = {10^{-4}}$. This parameter dictates how large of a step is taken in the direction of the negative gradient.
+    \item \textbf{Number of Iterations:} The algorithm was run for a total of $\text{10000}$ iterations. This was chosen to ensure sufficient convergence while managing computational cost.
+    \item \textbf{Initialization:} The initial control signals ($u$ and $v$) were initialized to a vector of zeros, i.e.,
+     $u_{\text{init}} = \mathbf{0}$ and $v_{\text{init}} = \mathbf{0}$.
+\end{itemize}
+
+These settings were carefully selected to balance convergence speed and the risk of overshooting the minimum or getting stuck in local optimal.
 
 Using the same parameters as Part II.b, we compare three cases. The resulting control signals and state trajectories are shown in Figures~\ref{fig:l1_controls} and \ref{fig:l1_states}.
 
