@@ -137,13 +137,34 @@ Taking the gradient with respect to $\mathbf{u}$ and setting to zero gives the n
 
 For $\gamma > 0$, the matrix $S^T S + \gamma I$ is symmetric and positive definite (since $S^T S$ is positive semi-definite and $\gamma I$ adds positive eigenvalues). Therefore, the matrix is invertible, which guarantees a unique solution $\mathbf{u}^*$ to this problem.
 
-
 For $\gamma = 0$, uniqueness depends on the rank of $S$. If $S$ is full rank (which it is in our case since $b \neq 0$ and the system is controllable), then $S^T S$ is positive definite and a unique solution exists.
 
-\textbf{Proof of smaller norm for regularised solution:}
+\textbf{Proof: Any $\mathbf{u^*}$ solving the associated regularised problem satisfies $\|\mathbf{u^*}\| \le \|\mathbf{u}\|$ for any $\mathbf{u}$ solving the unregularised linear least squares problem}
 
-\textit{[Your proof here. Show that any $\mathbf{u}^*$ solving the regularised problem satisfies $\|\mathbf{u}^*\|_2 \leq \|\mathbf{u}\|_2$ for any $\mathbf{u}$ solving the unregularised problem.]}
+Let the states be stacked, such that $x^u=(x_1,\dots,x_N)^\top$ and controls $u=(u_1,\dots,u_N)^\top$. 
 
+Depending on $a,b,\bar x$, there exists
+$$S\in\mathbb R^{N\times N},\qquad c\in\mathbb R^N$$
+such that $x^u=Su+c$. 
+
+Hence the problem is equivalent to the Tikhonov problem
+$$\min_{u\in\mathbb R^N} J_\gamma(u):=\|Su+c\|_2^2+\gamma\|u\|_2^2,\qquad \gamma>0$$
+
+The Hessian of $J_\gamma$ is $2(S^\top S+\gamma I)$ which is positive definite for $\gamma>0$, so $J_\gamma$ is strictly convex and admits a unique minimiser
+
+$$u^*=-(S^\top S+\gamma I)^{-1}S^\top c.$$
+
+Let $u$ be any minimiser of the unregularised problem ($\gamma=0$). Since $u^*$ minimises $J_\gamma$,
+
+$$\|Su^*+c\|^2+\gamma\|u^*\|^2 \le \|Su+c\|^2+\gamma\|u\|^2.$$
+
+But $u$ minimises $\|Su+c\|^2$, hence $\|Su+c\|^2-\|Su^*+c\|^2\le 0$. Therefore
+
+$$\gamma(\|u^*\|^2-\|u\|^2)\le 0,$$
+
+and so $\|u^*\|\le\|u\|$. This proves existence, uniqueness and the stated norm inequality.
+
+\textbf{Plotting optimal controls and associated trajectories}
 
 For $N = 50$, $a = 1$, $b = -0.01$, $\bar{x} = 1$, the plots of the optimal control signals and state trajectories for different values of $\gamma = 10^{-3}, 10^{-2}, 0.1, 1$ are shown in Figure~\ref{fig:dynopt_a}.
 
