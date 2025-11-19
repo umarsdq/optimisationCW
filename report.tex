@@ -4,12 +4,23 @@
 \usepackage{geometry}
 \usepackage{float}
 \usepackage{amssymb}
+\usepackage{tikzlings,tikzducks}
+\usepackage{fancyhdr}
+\geometry{a4paper, margin=1in}
+\pagestyle{fancy}
+
+\fancyhead[L]{\textit{Optimisation Coursework}}
+\fancyhead[R]{\textit{CID: 02238728, 02211542, 06062738}}
+\fancyfoot[C]{\tikz[scale=0.4]{\tikzling[signpost={\thepage}]}}
+\setlength{\footskip}{40pt}
+
+\usepackage{lipsum}
 \geometry{a4paper, margin=1in}
 \setlength{\parskip}{1em} % vertical space between paragraphs
 \setlength{\parindent}{0pt} % remove indentation
 
 \title{MATH60005/70005 Optimisation Coursework}
-\author{CID: 02238728, 02211542, ...}
+\author{CID: 02238728, 02211542, 06062738}
 \date{\vspace{-1em}}
 
 \begin{document}
@@ -55,7 +66,7 @@ We iterate through polynomial degrees $n=1, 2, \dots, 20$, solve for $\theta$ us
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.85\textwidth]{plots/mse_vs_degree.png}
-\caption{MSE vs. Polynomial Degree}
+\caption{MSE values for varying polynomial degree}
 \label{fig:mse_vs_degree}
 \end{figure}
 
@@ -97,13 +108,13 @@ Repeating the analysis from Part I.a with the new training data \texttt{training
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.85\textwidth]{plots/mse_comparison.png}
-\caption{MSE for varying polynomial degree, with and without gradient information)}
+\caption{MSE for varying polynomial degree, with and without gradient information}
 \label{fig:mse_comparison}
 \end{figure}
 
-The inclusion of gradient information significantly improves the conditioning of the problem. The MSE curve is smoother and achieves lower errors across all polynomial degrees. This is because gradient information provides additional constraints that help the optimization better capture the true underlying function.
+The inclusion of gradient information significantly improves the conditioning of the problem. The MSE curve is smoother and achieves lower errors across all polynomial degrees beyond $n=9$. This is because gradient information provides additional constraints that help the optimization better capture the true underlying function.
 
-Fixing the value of $n$ at the optimal value, Figure~\ref{fig:mse_vs_size} shows how the MSE varies with the number of training points. As expected, more training data leads to better generalization. Figure~\ref{fig:learned_function} shows the learned polynomial function at $n=9$.
+Figure~\ref{fig:mse_vs_size} shows how the MSE varies with the number of training points for the optimal value of $n=9$. As expected, more training data leads to better generalization as we saw previously. Figure~\ref{fig:learned_function} shows the learned polynomial function at $n=9$.
 
 \begin{figure}[H]
 \centering
@@ -134,18 +145,12 @@ x_1 &= ax_0 + bu_1 = a\bar{x} + bu_1 \\
 x_2 &= ax_1 + bu_2 = a^2\bar{x} + abu_1 + bu_2 \\&\vdots \\x_i &= a^i\bar{x} + b\sum_{j=1}^{i} a^{i-j}u_j
 \end{align*}
 
-This can be written in matrix form as $\mathbf{x}^u = S \mathbf{u} + \mathbf{c}$, where:
-\begin{itemize}
-    \item $S \in \mathbb{R}^{N \times N}$ is a lower triangular matrix with $S_{ij} = b \cdot a^{i-j}$ for $j \leq i$, and $S_{ij} = 0$ for $j > i$
-    \item $\mathbf{c} \in \mathbb{R}^N$ with $c_i = a^i \bar{x}$
-\end{itemize}
-
-The objective function becomes:
+This can be written in matrix form as $\mathbf{x}^u = S \mathbf{u} + \mathbf{c}$, such that the objective function becomes:
 \[
 \|S\mathbf{u} + \mathbf{c}\|_2^2 + \gamma \|\mathbf{u}\|_2^2
 \]
 
-Taking the gradient with respect to $\mathbf{u}$ and setting to zero gives the normal equations:
+Taking the gradient with respect to $\mathbf{u}$ and setting to zero gives the normal equations which we can solve.
 \[ (S^T S + \gamma I) \mathbf{u} = -S^T \mathbf{c} \]
 
 \textbf{Discussion of existence and uniqueness:}
@@ -190,12 +195,15 @@ For $N = 50$, $a = 1$, $b = -0.01$, $\bar{x} = 1$, the plots of the optimal cont
 \label{fig:dynopt_a}
 \end{figure}
 
-As $\gamma$ increases, the penalty on the control effort $\|\mathbf{u}\|_2^2$ becomes more significant. This leads to:
+The parameter $\gamma$ is a regularization weight that penalizes the magnitude of the control input, represented by the term $\gamma |u|^2$. It controls the trade-off between driving the state $x$ to zero and conserving control energy.
+
 \begin{itemize}
-    \item \textbf{Smaller control signals:} The optimizer prefers solutions with smaller control inputs to minimize the increased penalty.
-    \item \textbf{Larger state deviations:} With less aggressive control, the states $\mathbf{x}$ deviate more from zero, resulting in larger state trajectories.
-    \item \textbf{Trade-off:} There is a clear trade-off between control effort and state regulation. Higher $\gamma$ prioritizes control economy over state minimization.
+\item \textbf{Effect on the Optimal Control ($\mathbf{x_{\bar{x}}^{u*}}$):} As $\gamma$ increases, the penalty on using large control inputs becomes more severe. Consequently, the magnitude of the optimal control signal decreases significantly. For a very small $\gamma = 0.001$, the control starts at a high value (around $27$) to aggressively steer the state. In contrast, for a large $\gamma = 1$, the control signal is very small (less than $1$) for all time steps, as minimizing control effort is heavily prioritized.
+
+\item \textbf{Effect on the Optimal Trajectory ($\mathbf{u^*}$):} The reduction in control effort for larger $\gamma$ values directly impacts the system's ability to change the state. When $\gamma$ is small, the large control signal rapidly drives the state trajectory towards zero. As $\gamma$ increases, the convergence of the state to zero becomes progressively slower. For $\gamma = 1$, the state barely moves from its initial condition of $x_0 = 1$ because the applied control is too weak.
 \end{itemize}
+
+In summary, increasing $\gamma$ results in a less aggressive control policy and, consequently, a slower convergence of the state trajectory to its target. This demonstrates the fundamental trade-off in control theory between performance (fast convergence) and cost.
 
 \subsection*{II.b)}
 
@@ -243,20 +251,13 @@ S_x^T S_x + \gamma I & -\gamma I \\
 
 \textbf{Plots:}
 
-For the parameters $N = 50$, $a = 1$, $b = 0.05$, $\bar{x} = 1$, $c = 0.2$, $d = -0.5$, $\bar{y} = 1$, $\gamma = 1$, the resulting state trajectories and control signals for $\gamma=1$ are shown in Figures~\ref{fig:dynopt_b_states} and \ref{fig:dynopt_b_controls}.
+For the parameters $N = 50$, $a = 1$, $b = 0.05$, $\bar{x} = 1$, $c = 0.2$, $d = -0.5$, $\bar{y} = 1$, $\gamma = 1$, the resulting state trajectories and control signals for $\gamma=1$ are shown in Figure~\ref{fig:dynopt_b}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{plots/dynamic_optimisation_b_states.png}
-\caption{State trajectories for the coupled system with $\gamma=1$.}
-\label{fig:dynopt_b_states}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{plots/dynamic_optimisation_b_controls.png}
-\caption{Control signals for the coupled system with $\gamma=1$.}
-\label{fig:dynopt_b_controls}
+\includegraphics[width=0.85\textwidth]{plots/dynamic_optimisation_b.png}
+\caption{Optimal state trajectories and control signals for the coupled system with $\gamma=1$.}
+\label{fig:dynopt_b}
 \end{figure}
 
 \subsection*{II.c)}
