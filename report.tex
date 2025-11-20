@@ -30,43 +30,42 @@
 \section*{Part I: Gradient-Enhanced Polynomial Regression}
 
 \subsection*{I.a)}
-
-The general problem is to approximate a function $V(x)$ using a model $V_\theta(x) = \sum_{j=0}^{n} \theta_j \phi_j(x) = \Phi(x)^T \theta$, where $\Phi(x) = (\phi_1(x), \ldots, \phi_n(x))^T$ is a vector of known basis functions and $\theta \in \mathbb{R}^{n+1}$ is the vector of coefficients to be learned.
+ 
+The general problem is to approximate a function $V(x)$ using a model of the form 
+\[
+V_\theta(x) = \sum_{j=1}^{n} \theta_j \phi_j(x) = \Phi(x)^T \mathbf{\theta}
+\]
+where $\Phi(x) = (\phi_1(x), \ldots, \phi_n(x))$ is a vector of $n$ known basis functions, and $\mathbf{\theta} = (\theta_1, \ldots, \theta_n)^T \in \mathbb{R}^{n}$ is the vector of coefficients to be learned.
 
 Given $m$ training data points $(x_i, V(x_i))$, this can be formulated as a linear least squares problem:
 \[
-\min_{\theta \in \mathbb{R}^{n+1}} \|A\theta - b\|_2^2
+\min_{\mathbf{\theta} \in \mathbb{R}^{n}} \|\mathbf{A}\mathbf{\theta} - \mathbf{b}\|_2^2
 \]
-
-In general, $A$ consists of the basis functions evaluated at corresponding data points $x_i$:
+In general, $\mathbf{A}$ consists of the basis functions evaluated at the corresponding data points $x_i$:
 \[
 A = \begin{pmatrix} \phi_1(x_1) & \phi_2(x) & \cdots & \phi_{n}(x_1) \\ \phi_1(x_2) & \phi_2(x) & \cdots & \phi_{n}(x_2) \\ \vdots & \vdots & \ddots & \vdots \\ \phi_1(x_m) & \phi_2(x_m) & \cdots & \phi_{n}(x_m) \end{pmatrix} 
 \]
-
-The vector $b$ contains the observed values $V(x_i)$:
+The vector $\mathbf{b}$ contains the observed values $V(x_i)$:
 \[
-b= \begin{pmatrix} V(x_1) \\ V(x_2) \\ \vdots \\ V(x_m) \end{pmatrix}
+\mathbf{b}= \begin{pmatrix} V(x_1) \\ V(x_2) \\ \vdots \\ V(x_m) \end{pmatrix}
 \]
+For this specific problem, as per the instructions, we use the $n$-dimensional monomial basis $\Phi(x) = (1, x, x^2, \ldots, x^{n-1})^T$. This results in a polynomial approximation of degree $n-1$.
 
-For this specific problem, we modify the basis functions suggested in the problem, using the vector of monomials $\Phi(x) = (1, x, x^2, \ldots, x^n)^T$. This results in a polynomial approximation of degree $n$, where the coefficient vector $A$ and the basis vector $\Phi(x)$ are both of dimension $n+1$.            
-
-This means the matrix $A$ becomes the Vandermonde matrix,
-
+This means the $m \times n$ matrix $A$ becomes the Vandermonde matrix corresponding to this basis:
 \[
 A = \begin{pmatrix}
-1 & x_1 & x_1^2 & \cdots & x_1^{n} \\
-1 & x_2 & x_2^2 & \cdots & x_2^{n} \\
+1 & x_1 & x_1^2 & \cdots & x_1^{n-1} \\
+1 & x_2 & x_2^2 & \cdots & x_2^{n-1} \\
 \vdots & \vdots & \vdots & \ddots & \vdots \\
-1 & x_m & x_m^2 & \cdots & x_m^{n}
+1 & x_m & x_m^2 & \cdots & x_m^{n-1}
 \end{pmatrix}
 \]
-
-We iterate through polynomial degrees $n=1, 2, \dots, 20$, solve for $\theta$ using 1-d function data given in \texttt{trainingIa.dat}, and then calculate the MSE on the validation data \texttt{validationIa.dat}. Plotting the MSE against the polynomial degree $n$ in Figure~\ref{fig:mse_vs_degree} shows that the smallest $n$ for which the MSE is less than $10^{-3}$ is ${n=9}$.
+We iterate through polynomial degrees $n=1, 2, \dots, 20$ (or in this case, $n-1 = 0, \ldots, 19$), solve for $\mathbf{\theta}$ using 1-d function data given in \texttt{trainingIa.dat}, and then calculate the MSE on the validation data \texttt{validationIa.dat}. Plotting the MSE against the polynomial degree $n$ in Figure~\ref{fig:mse_vs_degree} shows that the smallest degree for which the MSE is less than $10^{-3}$ is ${n=9}$.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{plots/mse_vs_degree.png}
-\caption{MSE values for varying polynomial degree}
+\includegraphics[width=0.9\textwidth]{plots/mse_vs_degree.png}
+\caption{MSE values for varying polynomial degree $n$}
 \label{fig:mse_vs_degree}
 \end{figure}
 
@@ -74,58 +73,56 @@ Fixing the value of $n=9$, we plot the MSE on the validation data versus the num
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{plots/mse_vs_training_size_a.png}
-\caption{MSE on validation data vs. number of training points for Part I.a (fixed $n=9$)}
+\includegraphics[width=0.9\textwidth]{plots/mse_vs_training_size_a.png}
+\caption{MSE on validation data vs. number of training points at fixed $n=9$ for Part I.a}
 \label{fig:mse_vs_size_a}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{plots/learned_function_a.png}
-\caption{Learned polynomial function for Part I.a at $n=9$}
+\includegraphics[width=0.9\textwidth]{plots/learned_function_a.png}
+\caption{Learned polynomial function at $n=9$ for Part I.a}
 \label{fig:learned_function_a}
 \end{figure}
 
 
 \subsection*{I.b)}
 
-In this part, we augment the training data with gradient information. Using the same model $V_\theta(\mathbf{x})$ and monomial basis $\Phi(x) = (1, x, x^2, \ldots, x^n)^T$, we reformulate the linear least squares problem to incorporate both function values and gradient data $\frac{dV}{dx}(\mathbf{x}_i)$ from \texttt{trainingIb.dat}.
+In this part, we augment the training data with gradient information. Using the same model $V_\theta(x)$ and monomial basis $\Phi(x) = (1, x, x^2, \ldots, x^{n-1})^T$, we reformulate the linear least squares problem to incorporate both function values and gradient data $\frac{dV}{dx}(x_i)$ from \texttt{trainingIb.dat}.
 
 The gradient of the model is:
 \[
 \frac{dV_\theta}{dx} = \sum_{j=1}^{n} j \theta_j x^{j-1}
 \]
-
 We construct a stacked system:
 \[
-\min_\theta \left\| \begin{bmatrix} A_{\text{fit}} \\ A_{\text{grad}} \end{bmatrix} \theta - \begin{bmatrix} b_{\text{fit}} \\ b_{\text{grad}} \end{bmatrix} \right\|_2^2
+\min_{\mathbf{\theta}} \left\| \begin{bmatrix} A_{\text{fit}} \\ A_{\text{grad}} \end{bmatrix} \mathbf{\theta} - \begin{bmatrix} \mathbf{b}_{\text{fit}} \\ \mathbf{b}_{\text{grad}} \end{bmatrix} \right\|_2^2
 \]
+where $A_{\text{fit}}$ is the Vandermonde matrix as before, $A_{\text{grad}}$ has entries $(A_{\text{grad}})_{ij} = j \cdot x_i^{j-1}$ for $j \geq 1$ and 0 for $j=0$, $\mathbf{b}_{\text{fit}}$ contains the function values, and $\mathbf{b}_{\text{grad}}$ contains the gradient values.
 
-where $A_{\text{fit}}$ is the Vandermonde matrix as before, $A_{\text{grad}}$ has entries $(A_{\text{grad}})_{ij} = j \cdot x_i^{j-1}$ for $j \geq 1$ and 0 for $j=0$, $b_{\text{fit}}$ contains the function values, and $b_{\text{grad}}$ contains the gradient values.
-
-Repeating the analysis from Part I.a with the new training data \texttt{trainingIb.dat}, we find that the smallest degree $n$ for which the MSE on the validation data is less than $10^{-3}$ is still $\mathbf{n=9}$. However, as shown in Figure~\ref{fig:mse_comparison}, the MSE for the gradient-enhanced regression is generally lower for the same polynomial degree, and the curve is smoother, indicating a better-conditioned problem.
+Repeating the analysis from Part I.a, we find that the smallest degree $n$ for which the MSE on the validation data is less than $10^{-3}$ remains at $\mathbf{n=9}$, as shown in Figure~\ref{fig:mse_comparison}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{plots/mse_comparison.png}
-\caption{MSE for varying polynomial degree, with and without gradient information}
+\includegraphics[width=0.9\textwidth]{plots/mse_comparison.png}
+\caption{MSE for varying polynomial degree $n$, with and without gradient information}
 \label{fig:mse_comparison}
 \end{figure}
 
-The inclusion of gradient information significantly improves the conditioning of the problem. The MSE curve is smoother and achieves lower errors across all polynomial degrees beyond $n=9$. This is because gradient information provides additional constraints that help the optimization better capture the true underlying function.
+The inclusion of gradient information significantly improves the conditioning of the problem. The MSE curve is smoother and achieves lower errors across the polynomial degrees beyond $n=9$. This is because gradient information provides additional constraints that help the optimization better capture the true underlying function.
 
-Figure~\ref{fig:mse_vs_size} shows how the MSE varies with the number of training points for the optimal value of $n=9$. As expected, more training data leads to better generalization as we saw previously. Figure~\ref{fig:learned_function} shows the learned polynomial function at $n=9$.
+Figure~\ref{fig:mse_vs_size} shows how the MSE varies with the number of training points for the fixed optimal degree of $n=9$. As expected, more training data leads to better generalization as we saw previously. Figure~\ref{fig:learned_function} shows the learned polynomial function at $n=9$.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{plots/mse_vs_training_size_a.png}
+\includegraphics[width=0.9\textwidth]{plots/mse_vs_training_size_a.png}
 \caption{MSE on validation data vs. number of training points (fixed $n=9$)}
 \label{fig:mse_vs_size}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{plots/learned_function_with_gradient.png}
+\includegraphics[width=0.9\textwidth]{plots/learned_function_with_gradient.png}
 \caption{Learned polynomial function at $n=9$ with gradient information}
 \label{fig:learned_function}
 \end{figure}
@@ -155,34 +152,35 @@ Taking the gradient with respect to $\mathbf{u}$ and setting to zero gives the n
 
 \textbf{Discussion of existence and uniqueness:}
 
-For $\gamma > 0$, the matrix $S^T S + \gamma I$ is symmetric and positive definite (since $S^T S$ is positive semi-definite and $\gamma I$ adds positive eigenvalues). Therefore, the matrix is invertible, which guarantees a unique solution $\mathbf{u}^*$ to this problem.
+For $\gamma > 0$, the matrix $S^T S + \gamma I$ is symmetric and positive definite since $S^T S$ is positive semi-definite and $\gamma I$ adds positive eigenvalues. Therefore, the matrix is invertible, which guarantees a unique solution $\mathbf{u}^*$ to this problem.
 
-For $\gamma = 0$, uniqueness depends on the rank of $S$. If $S$ is full rank (which it is in our case since $b \neq 0$ and the system is controllable), then $S^T S$ is positive definite and a unique solution exists.
+For $\gamma = 0$, uniqueness depends on the rank of $S$. If $S$ is full rank, which it is in our case since $b \neq 0$, then $S^T S$ is positive definite and a unique solution exists.
 
 \textbf{Proof: Any $\mathbf{u^*}$ solving the associated regularised problem satisfies $\|\mathbf{u^*}\| \le \|\mathbf{u}\|$ for any $\mathbf{u}$ solving the unregularised linear least squares problem}
 
-Let the states be stacked, such that $x^u=(x_1,\dots,x_N)^\top$ and controls $u=(u_1,\dots,u_N)^\top$. 
+Let the states be stacked, such that $\mathbf{x}^u=(x_1,\dots,x_N)^\top$ and controls $\mathbf{u}=(u_1,\dots,u_N)^\top$. 
 
-Depending on $a,b,\bar x$, there exists
-$$S\in\mathbb R^{N\times N},\qquad c\in\mathbb R^N$$
-such that $x^u=Su+c$. 
-
+Depending on $a,b,\bar x$, there exists $S\in\mathbb R^{N\times N},\mathbf{c}\in\mathbb R^N$
+such that
+\[
+\mathbf{x}^u=S\mathbf{u}+\mathbf{c}
+\]
 Hence the problem is equivalent to the Tikhonov problem
-$$\min_{u\in\mathbb R^N} J_\gamma(u):=\|Su+c\|_2^2+\gamma\|u\|_2^2,\qquad \gamma>0$$
+$$\min_{\mathbf{u}\in\mathbb R^N} J_\gamma(\mathbf{u}):=\|S\mathbf{u}+\mathbf{c}\|_2^2+\gamma\|\mathbf{u}\|_2^2,\qquad \gamma>0$$
 
 The Hessian of $J_\gamma$ is $2(S^\top S+\gamma I)$ which is positive definite for $\gamma>0$, so $J_\gamma$ is strictly convex and admits a unique minimiser
 
-$$u^*=-(S^\top S+\gamma I)^{-1}S^\top c.$$
+$$\mathbf{u}^*=-(S^\top S+\gamma I)^{-1}S^\top \mathbf{c}.$$
 
-Let $u$ be any minimiser of the unregularised problem ($\gamma=0$). Since $u^*$ minimises $J_\gamma$,
+Let $\mathbf{u}$ be any minimiser of the unregularised problem ($\gamma=0$). Since $\mathbf{u}^*$ minimises $J_\gamma$,
 
-$$\|Su^*+c\|^2+\gamma\|u^*\|^2 \le \|Su+c\|^2+\gamma\|u\|^2.$$
+$$\|S\mathbf{u}^*+\mathbf{c}\|^2+\gamma\|\mathbf{u}^*\|^2 \le \|S\mathbf{u}+\mathbf{c}\|^2+\gamma\|\mathbf{u}\|^2.$$
 
-But $u$ minimises $\|Su+c\|^2$, hence $\|Su+c\|^2-\|Su^*+c\|^2\le 0$. Therefore
+But $\mathbf{u}$ minimises $\|S\mathbf{u}+\mathbf{c}\|^2$, hence $\|S\mathbf{u}+\mathbf{c}\|^2-\|S\mathbf{u}^*+\mathbf{c}\|^2\le 0$. Therefore
 
-$$\gamma(\|u^*\|^2-\|u\|^2)\le 0,$$
+$$\gamma(\|\mathbf{u}^*\|^2-\|\mathbf{u}\|^2)\le 0,$$
 
-and so $\|u^*\|\le\|u\|$. This proves existence, uniqueness and the stated norm inequality.
+and so $\|\mathbf{u}^*\|\le\|\mathbf{u}\|$. This proves existence, uniqueness and the desired inequality.
 
 \textbf{Plotting optimal controls and associated trajectories}
 
@@ -190,7 +188,7 @@ For $N = 50$, $a = 1$, $b = -0.01$, $\bar{x} = 1$, the plots of the optimal cont
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{plots/dynamic_optimisation_a.png}
+\includegraphics[width=0.9\textwidth]{plots/dynamic_optimisation_a.png}
 \caption{Optimal control and state trajectories for different values of $\gamma$.}
 \label{fig:dynopt_a}
 \end{figure}
@@ -198,9 +196,9 @@ For $N = 50$, $a = 1$, $b = -0.01$, $\bar{x} = 1$, the plots of the optimal cont
 The parameter $\gamma$ is a regularization weight that penalizes the magnitude of the control input, represented by the term $\gamma |u|^2$. It controls the trade-off between driving the state $x$ to zero and conserving control energy.
 
 \begin{itemize}
-\item \textbf{Effect on the Optimal Control ($\mathbf{x_{\bar{x}}^{u*}}$):} As $\gamma$ increases, the penalty on using large control inputs becomes more severe. Consequently, the magnitude of the optimal control signal decreases significantly. For a very small $\gamma = 0.001$, the control starts at a high value (around $27$) to aggressively steer the state. In contrast, for a large $\gamma = 1$, the control signal is very small (less than $1$) for all time steps, as minimizing control effort is heavily prioritized.
+\item \textbf{Effect on the Optimal Control ($\mathbf{u^*}$):} As $\gamma$ increases, the penalty on using large control inputs becomes more severe. Consequently, the magnitude of the optimal control signal decreases significantly. For a very small $\gamma = 0.001$, the control starts at a high value (around $27$) to aggressively steer the state. In contrast, for a large $\gamma = 1$, the control signal is very small (less than $1$) for all time steps, as minimizing control effort is heavily prioritized.
 
-\item \textbf{Effect on the Optimal Trajectory ($\mathbf{u^*}$):} The reduction in control effort for larger $\gamma$ values directly impacts the system's ability to change the state. When $\gamma$ is small, the large control signal rapidly drives the state trajectory towards zero. As $\gamma$ increases, the convergence of the state to zero becomes progressively slower. For $\gamma = 1$, the state barely moves from its initial condition of $x_0 = 1$ because the applied control is too weak.
+\item \textbf{Effect on the Optimal Trajectory ($\mathbf{x}^{u*}_{\bar{x}}$):} The reduction in control effort for larger $\gamma$ values directly impacts the system's ability to change the state. When $\gamma$ is small, the large control signal rapidly drives the state trajectory towards zero. As $\gamma$ increases, the convergence of the state to zero becomes progressively slower. For $\gamma = 1$, the state barely moves from its initial condition of $x_0 = 1$ because the applied control is too weak.
 \end{itemize}
 
 In summary, increasing $\gamma$ results in a less aggressive control policy and, consequently, a slower convergence of the state trajectory to its target. This demonstrates the fundamental trade-off in control theory between performance (fast convergence) and cost.
@@ -212,14 +210,12 @@ In this part, we consider a second system $(S')$ with dynamics:
 y_0 = \bar{y}, \quad y_i = cy_{i-1} + dv_i, \quad i=1,\ldots,N
 \]
 
-The multi-objective problem (MO) is:
+The multi-objective problem is:
 \[
 \min_{(\mathbf{u},\mathbf{v}) \in \mathbb{R}^{2N}} \|\mathbf{x}\|_2^2 + \|\mathbf{y}\|_2^2 + \gamma\|\mathbf{u} - \mathbf{v}\|_2^2
 \]
 
-where $\mathbf{x}$ and $\mathbf{y}$ are the trajectories of systems $(S)$ and $(S')$ respectively, driven by controls $\mathbf{u}$ and $\mathbf{v}$, with $\gamma > 0$.
-
-Similar to Part II.a, we can write $\mathbf{x} = S_x\mathbf{u} + \mathbf{c}_x$ and $\mathbf{y} = S_y\mathbf{v} + \mathbf{c}_y$.
+where $\gamma>0$ and $\mathbf{x}$ and $\mathbf{y}$ are the trajectories of systems $(S_x)$ and $(S_y)$ respectively, driven by controls $\mathbf{u}$ and $\mathbf{v}$. Similarly to Part II.a, we can write $\mathbf{x} = S_x\mathbf{u} + \mathbf{c}_x$ and $\mathbf{y} = S_y\mathbf{v} + \mathbf{c}_y$.
 
 The objective becomes:
 \[
@@ -231,7 +227,6 @@ Taking gradients and setting to zero yields the coupled system:
 (S_x^T S_x + \gamma I)\mathbf{u} - \gamma \mathbf{v} &= -S_x^T\mathbf{c}_x \\
 -\gamma \mathbf{u} + (S_y^T S_y + \gamma I)\mathbf{v} &= -S_y^T\mathbf{c}_y
 \end{align*}
-
 This can be written as a block system:
 \[
 \begin{bmatrix}
@@ -248,14 +243,13 @@ S_x^T S_x + \gamma I & -\gamma I \\
 -S_y^T\mathbf{c}_y
 \end{bmatrix}
 \]
+This block system has a unique solution because the matrix on the left-hand side is symmetric and positive definite for $\gamma > 0$. 
 
-\textbf{Plots:}
-
-For the parameters $N = 50$, $a = 1$, $b = 0.05$, $\bar{x} = 1$, $c = 0.2$, $d = -0.5$, $\bar{y} = 1$, $\gamma = 1$, the resulting state trajectories and control signals for $\gamma=1$ are shown in Figure~\ref{fig:dynopt_b}.
+The linear system is then solved to plot the optimal control vectors $\mathbf{u}^*$ and $\mathbf{v}^*$ for the parameters $N = 50$, $a = 1$, $b = 0.05$, $\bar{x} = 1$, $c = 0.2$, $d = -0.5$, $\bar{y} = 1$, $\gamma = 1$ in Figure~\ref{fig:dynopt_b}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{plots/dynamic_optimisation_b.png}
+\includegraphics[width=0.9\textwidth]{plots/dynamic_optimisation_b.png}
 \caption{Optimal state trajectories and control signals for the coupled system with $\gamma=1$.}
 \label{fig:dynopt_b}
 \end{figure}
@@ -267,25 +261,26 @@ Using the same parameters as in Part II.b, if we fix every parameter except for 
 \mathcal{J}_1(\gamma) &:= \|\mathbf{x}^*(\gamma)\|_2^2 + \|\mathbf{y}^*(\gamma)\|_2^2 \\
 \mathcal{J}_2(\gamma) &:= \|\mathbf{u}^*(\gamma) - \mathbf{v}^*(\gamma)\|_2^2
 \end{align*}
+By varying $\gamma$ from $10^{-5}$ to $10^5$ (with the exponent increasing in steps of $0.1$), we compute the corresponding optimal solutions and evaluate both functionals. The behaviour of each objective function with respect to $\gamma$, and the plots of $(\mathcal{J}_2(\gamma), \mathcal{J}_1(\gamma))$ are shown in Figure~\ref{fig:pareto_all}.
 
-By varying $\gamma$ from $10^{-5}$ to $10^5$, we compute the corresponding optimal solutions and evaluate both functionals. The behaviour of each objective function with respect to $\gamma$, and the plots of $(\mathcal{J}_2(\gamma), \mathcal{J}_1(\gamma))$ are shown in Figures~\ref{fig:pareto_all}.
+\textbf{Impact of $\gamma$ on the total cost:}
 
-\textbf{Draw a conclusion regarding the impact of $\gamma$ on the total cost:}
+The parameter $\gamma$ balances the two competing goals: keeping the system's internal state stable, measured by cost $J_1$, and sticking to an ideal control strategy, measured by cost $J_2$. 
 
-As $\gamma$ increases, the optimization places more weight on minimizing $\|\mathbf{u} - \mathbf{v}\|_2^2$ (making the controls more similar), which results in:
+The plots show a direct trade-off:
+\vspace{-1em}
 \begin{itemize}
-    \item Lower $\mathcal{J}_2$: The controls $\mathbf{u}$ and $\mathbf{v}$ become more coordinated
-    \item Higher $\mathcal{J}_1$: The state trajectories $\mathbf{x}$ and $\mathbf{y}$ are less well-regulated
+\item{When $\gamma$ is small, the priority is keeping the system stable, which makes $J_1$ low but requires deviating from the ideal control plan, making $J_2$ high.}
+\item{Conversely, when $\gamma$ is large, the priority shifts to following the ideal control plan almost perfectly, which makes $J_2$ low at the expense of system stability, causing $J_1$ to be high.}
 \end{itemize}
+\vspace{-1em}
+The Pareto front shows the fundamental trade-off: we cannot simultaneously minimize both state deviations and control coordination. An appropriate $\gamma$ is a design choice to balance the importance between the two objectives.
 
-The Pareto front shows the fundamental trade-off: we cannot simultaneously minimize both state deviations and control coordination. The parameter $\gamma$ acts as a weighting factor that allows us to navigate along this trade-off curve.
-
-\newpage
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{plots/pareto_front.png}
-\includegraphics[width=0.7\textwidth]{plots/j1_vs_gamma.png}
-\includegraphics[width=0.7\textwidth]{plots/j2_vs_gamma.png}
+\includegraphics[width=0.75\textwidth]{plots/j1_vs_gamma.png}
+\includegraphics[width=0.75\textwidth]{plots/j2_vs_gamma.png}
+\includegraphics[width=0.75\textwidth]{plots/pareto_front.png}
 \caption{Pareto front for the multi-objective optimisation problem.}
 \label{fig:pareto_all}
 \end{figure}
@@ -293,79 +288,89 @@ The Pareto front shows the fundamental trade-off: we cannot simultaneously minim
 \newpage
 \subsection*{II.d)}
 
-\textbf{Explain the meaning of $L_\epsilon(u_i)$ as a regulariser. Is it a differentiable function?}
+In this section, we promote sparsity in the control penalty through the inclusion of an $\ell_1$-norm penalty in the cost:
+\[
+\min_{(\mathbf{u},\mathbf{v}) \in \mathbb{R}^{2N}} \|\mathbf{x}\|_2^2 + \|\mathbf{y}\|_2^2 + \gamma_2\|\mathbf{u} - \mathbf{v}\|_2^2 + \gamma_1\|\mathbf{u} - \mathbf{v}\|_1
+\]
 
-The function $L_\epsilon(u_i)$ is a smooth approximation of the absolute value function $|u_i|$:
+\textbf{The meaning of $L_\epsilon(u_i)$ as a regulariser:}
+
+The $L_\epsilon(u_i)$ function provides an approximate and smoothed version of the $\ell_1$ penalty. It behaves quadratically near the origin and linearly away from it:
 \[
 L_\epsilon(u_i) = 
 \begin{cases}
-\frac{1}{2}u_i^2 & \text{if } |u_i| \leq \epsilon \\
-\epsilon(|u_i| - \frac{1}{2}\epsilon) & \text{otherwise}
+\frac{1}{2}u_i^2, & |u_i| \le \epsilon, \\[6pt]
+\epsilon\!\left(|u_i| - \tfrac12 \epsilon\right), & \text{otherwise}.
 \end{cases}
 \]
 
-As a regulariser, $L_\epsilon$ promotes sparsity in the control signal (similar to L1 regularisation) but is smooth everywhere, making it suitable for gradient-based optimization methods.
+As a regulariser, it encourages sparsity in the same way as the $\ell_1$ norm by pushing small coefficients toward zero. The quadratic region makes the function smooth at the origin, avoiding the non-differentiability of $|u_i|$ and making the optimisation problem more stable for gradient-based methods. For larger values, the linear part ensures the penalty grows like the absolute value.
 
-$L_\epsilon$ is differentiable everywhere with gradient:
+The function is differentiable everywhere, with derivative
 \[
-\frac{dL_\epsilon}{du_i} = 
+\frac{dL_\epsilon}{du_i} =
 \begin{cases}
-u_i & \text{if } |u_i| \leq \epsilon \\
-\epsilon \ \text{sign}(u_i) & \text{otherwise}
+u_i, & |u_i| \le \epsilon, \\[6pt]
+\epsilon\,\mathrm{sign}(u_i), & \text{otherwise}.
 \end{cases}
 \]
+This continuous gradient is what allows $L_\epsilon$ to act as a smooth surrogate for the $\ell_1$ norm.
 
 \textbf{Implementation of Gradient Descent:}
 
-We implement a gradient descent method to solve:
+Since the $\ell_1$-norm is non-differentiable at zero, we cannot directly use standard gradient-based methods. Instead, replace the $\ell_1$-norm with its smooth approximation, $L_\epsilon$. The problem to solve then becomes:
 \[
 \min_{(\mathbf{u},\mathbf{v}) \in \mathbb{R}^{2N}} \|\mathbf{x}\|_2^2 + \|\mathbf{y}\|_2^2 + \gamma_2\|\mathbf{u} - \mathbf{v}\|_2^2 + \gamma_1\sum_{i=1}^N L_\epsilon(u_i - v_i)
 \]
-The method updates the control signals $u$ and $v$ using the gradients
+To solve the problem using Gradient Descent, we first define the full objective function, $J(\mathbf{u}, \mathbf{v})$, using the matrix forms of the state equations ($\mathbf{x} = S_x\mathbf{u} + \mathbf{c}_x$ and $\mathbf{y} = S_y\mathbf{v} + \mathbf{c}_y$):
+\[
+J(\mathbf{u}, \mathbf{v}) = \|S_x\mathbf{u} + \mathbf{c}_x\|_2^2 + \|S_y\mathbf{v} + \mathbf{c}_y\|_2^2 + \gamma_2\|\mathbf{u} - \mathbf{v}\|_2^2 + \gamma_1\sum_{i=1}^N L_\epsilon(u_i - v_i)
+\]
+The update rules of the method at each iteration $k$ are:
 \begin{align*}
-    \nabla_u J &= 2 S_x^T (S_x u + c_x) + 2 \gamma_2 (u - v) + \gamma_1 \nabla_z L_\epsilon(u - v) \\
-    \nabla_v J &= 2 S_y^T (S_y v + c_y) - 2 \gamma_2 (u - v) - \gamma_1 \nabla_z L_\epsilon(u - v)
+    \mathbf{u}_{k+1} &= \mathbf{u}_k - \alpha \nabla_{\mathbf{u}} J(\mathbf{u}_k, \mathbf{v}_k) \\
+    \mathbf{v}_{k+1} &= \mathbf{v}_k - \alpha \nabla_{\mathbf{v}} J(\mathbf{u}_k, \mathbf{v}_k)
 \end{align*}
-These gradients are derived from an objective function that aims to minimize the state norms ($\|x\|^2$ and $\|y\|^2$), along with $L_2$ and $L_1$ regularization terms on the difference between the controls weighted by $\gamma_2$ and $\gamma_1$ respectively.
-
-This approximation is used to make the $L_1$ norm differentiable for the optimization process. 
-
-To determine the optimal learning rate, the gradient descent algorithm was performed for each of the 3 given cases for varying learning rates and a maximum of 5000 iterations. The cost ($\|x^2\|+\|y^2\|$) was found to converge, with an optimal learning rate of $1 \times 10^{-1}$.
-
+where $\alpha$ is the learning rate and the gradients, $\nabla_{\mathbf{u}} J$ and $\nabla_{\mathbf{v}} J$, are calculated as:
+\begin{align*}
+    \nabla_{\mathbf{u}} J &= 2 S_x^T (S_x \mathbf{u} + \mathbf{c}_x) + 2 \gamma_2 (\mathbf{u} - \mathbf{v}) + \gamma_1 \nabla L_\epsilon(\mathbf{u} - \mathbf{v}) \\
+    \nabla_{\mathbf{v}} J &= 2 S_y^T (S_y \mathbf{v} + \mathbf{c}_y) - 2 \gamma_2 (\mathbf{u} - \mathbf{v}) - \gamma_1 \nabla L_\epsilon(\mathbf{u} - \mathbf{v})
+\end{align*}
+To determine the optimal learning rate, the gradient descent algorithm was performed for each of the 3 given cases for varying learning rates. A maximum number of iterations of $20000$ is used such that the algorithm has ample time to converge, ensuring the final cost is representative of the learning rate's performance. The cost was found to converge early in all 3 cases, and an optimal learning rate of $0.1$ was determined.
+ 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{plots/learning_rate_comparison.png}
-\caption{Cost of gradient descent method against learning rate for all three cases with a maximum of 5000 iterations.}
+\includegraphics[width=.95\textwidth]{plots/learning_rate_comparison.png}
+\caption{Cost of gradient descent method against learning rate for all three cases.}
 \label{fig:lr_comparison}
 \end{figure}
 
 \textbf{Settings:}
+\vspace{-1em}
 \begin{itemize}
-    \item \textbf{Learning Rate:} The step size at each iteration was set to $\alpha = {10^{-1}}$ after experimenting with various values. This parameter dictates how large of a step is taken in the direction of the negative gradient.
-    \item \textbf{Number of Iterations:} The algorithm was run for a total of $\text{10000}$ iterations. This was chosen to ensure sufficient convergence while managing computational cost.
-    \item \textbf{Initialization:} The initial control signals ($u$ and $v$) were initialized to a vector of zeros, i.e.,
-     $u_{\text{init}} = \mathbf{0}$ and $v_{\text{init}} = \mathbf{0}$.
+    \item \textbf{Learning Rate:} The step size at each iteration was set to the optimal value of $\alpha = 0.1$. This value dictates how large of a step is taken in the direction of the negative gradient.
+    \item \textbf{Number of Iterations:} The algorithm was run for a total of $\text{5000}$ iterations. This was chosen to ensure sufficient convergence while managing computational cost.
+    \item \textbf{Initialization:} The initial control signals ($\mathbf{u}$ and $\mathbf{v}$) were initialized to a vector of zeros, i.e.,
+     $\mathbf{u}_{\text{init}} = \mathbf{0}$ and $\mathbf{v}_{\text{init}} = \mathbf{0}$.
 \end{itemize}
-These settings were carefully selected to balance convergence speed and the risk of overshooting the minimum or getting stuck in local optimal.
+\vspace{-1em}
 
-Using the same parameters as Part II.b, we compare three cases. The resulting control signals and state trajectories are shown in Figure~\ref{fig:l1_controls_states}.
+Using the same parameters as Part II.b, we compare the resulting control signals and state trajectories for the three cases in Figure~\ref{fig:L1_controls_states}.
 
-\newpage
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.\textwidth]{plots/L1_combined.png}
 \caption{Control signals and state trajectories for the three cases.}
-\label{fig:l1_controls_states}
+\label{fig:L1_controls_states}
 \end{figure}
-
 \textbf{Observations:}
-[AI for now]
+\vspace{-1em}
 \begin{itemize}
-    \item \textbf{Case i ($\epsilon=1, \gamma_2=1, \gamma_1=0$):} This is the same as the problem in II.b, with only L2 regularization on the difference of the controls. The controls $u$ and $v$ are encouraged to be close to each other in a least-squares sense. The resulting control signals are smooth and track each other closely, but are not sparse. The state trajectories are driven towards zero effectively.
+    \item \textbf{Case i ($\gamma_1=0, \gamma_2=1, \epsilon=1$):} With a pure $\ell_2$ penalty, the problem is equivalent to Part II.b. The gradient descent converges to the analytical solution, yielding smooth control signals $\mathbf{u}$ and $\mathbf{v}$ that closely follow each other but are not identical. Both controls work together to effectively drive the state trajectories to zero. The resulting state trajectories show a smooth exponential decay towards zero.
+    
+    \item \textbf{Case ii ($\gamma_1=1, \gamma_2=0, \epsilon=1$):} Here, a smoothed $\ell_1$-style regularizer is used. However, with a large smoothing parameter ($\epsilon=1$), the penalty function $L_\epsilon$ has a wide quadratic region, making it behave very similarly to an $\ell_2$ norm. As a result, the control signals are almost indistinguishable from those in Case (i), pulling the controls together but not enforcing true sparsity. Similar to Case (i), the state trajectories also exhibit a smooth decay towards zero.
 
-    \item \textbf{Case ii ($\epsilon=1, \gamma_2=0, \gamma_1=1$):} With L1-style regularization (using the Huber-like approximation $L_\epsilon$), the objective is to make the difference $u-v$ sparse. We can see in the control plot that for many time steps, the control signals are identical ($u_i=v_i$), meaning their difference is exactly zero. This is a key feature of L1 regularization. The state trajectories are still controlled, but perhaps less effectively than in Case i, as the strict requirement of sparsity on the control difference can be limiting.
-
-    \item \textbf{Case iii ($\epsilon=0.1, \gamma_2=0, \gamma_1=1$):} Here, $\epsilon$ is smaller, making the regularizer $L_\epsilon$ a closer approximation to the true L1 norm. The effect of this is a stronger promotion of sparsity. The plot shows that the periods where $u_i = v_i$ are more frequent and longer compared to Case ii. However, where the controls do differ, the deviation can be larger. The smaller $\epsilon$ makes the "corners" of the L1 norm sharper, pushing the solution more aggressively towards sparsity. This increased sparsity might come at the cost of poorer state regulation, as the states deviate further from zero compared to the other two cases.
+    \item \textbf{Case iii ($\gamma_1=1, \gamma_2=0, \epsilon=0.1$):} Reducing the smoothing parameter to $\epsilon=0.1$ makes the regularizer approximate the true $\ell_1$ norm more closely, which promotes sparsity in the difference $\mathbf{u}-\mathbf{v}$. This has a dramatic effect on the control strategy. The optimizer finds that the most efficient way to achieve the objective is to apply a single, large control impulse with $\mathbf{u}$ at the first time step, while keeping $\mathbf{v}$ close to zero for all time. After the initial impulse, both controls remain near zero. This strategy makes the difference $\mathbf{u}-\mathbf{v}$ sparse (non-zero only at the start) while still successfully driving both states to zero. The state trajectories for this case are notably different in their initial behaviour compared to the other cases. They exhibit a sharper, more immediate decrease in value, reflecting the highly impulsive control strategy. Despite this initial difference, the objective of driving the states to zero is still effectively achieved.
 \end{itemize}
-
+\vspace{-1em}
 \end{document}
