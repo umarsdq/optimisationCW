@@ -111,14 +111,16 @@ Repeating the analysis from Part I.a, we find that the smallest degree $n$ for w
 
 The inclusion of gradient information significantly improves the conditioning of the problem. The MSE curve is smoother and achieves lower errors across the polynomial degrees beyond $n=9$. This is because gradient information provides additional constraints that help the optimization better capture the true underlying function.
 
-Figure~\ref{fig:mse_vs_size} shows how the MSE varies with the number of training points for the fixed optimal degree of $n=9$. As expected, more training data leads to better generalization as we saw previously. Figure~\ref{fig:learned_function} shows the learned polynomial function at $n=9$.
+Figure~\ref{fig:mse_vs_size_comparison} compares the MSE against the number of training points for both methods. The model that includes gradient information consistently achieves a lower validation error, indicating that it generalises better.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{plots/mse_vs_training_size_a.png}
-\caption{MSE on validation data vs. number of training points (fixed $n=9$)}
-\label{fig:mse_vs_size}
+\includegraphics[width=0.9\textwidth]{plots/mse_vs_training_size_comparison.png}
+\caption{MSE on validation data vs. number of training points (fixed $n=9$), with and without gradient information}
+\label{fig:mse_vs_size_comparison}
 \end{figure}
+
+Despite the improved MSE, the final learned function shown in Figure \ref{fig:learned_function} is visually identical to the one learned without gradient information, suggesting both models successfully capture the function's overall shape. Incorporating the gradient information does not lead to a significant improvement in the final approximation of the function.
 
 \begin{figure}[H]
 \centering
@@ -141,12 +143,10 @@ We can express the state $\mathbf{x}^u$ in terms of the control $\mathbf{u}$ by 
 x_1 &= ax_0 + bu_1 = a\bar{x} + bu_1 \\
 x_2 &= ax_1 + bu_2 = a^2\bar{x} + abu_1 + bu_2 \\&\vdots \\x_i &= a^i\bar{x} + b\sum_{j=1}^{i} a^{i-j}u_j
 \end{align*}
-
 This can be written in matrix form as $\mathbf{x}^u = S \mathbf{u} + \mathbf{c}$, such that the objective function becomes:
 \[
 \|S\mathbf{u} + \mathbf{c}\|_2^2 + \gamma \|\mathbf{u}\|_2^2
 \]
-
 Taking the gradient with respect to $\mathbf{u}$ and setting to zero gives the normal equations which we can solve.
 \[ (S^T S + \gamma I) \mathbf{u} = -S^T \mathbf{c} \]
 
@@ -158,28 +158,17 @@ For $\gamma = 0$, uniqueness depends on the rank of $S$. If $S$ is full rank, wh
 
 \textbf{Proof: Any $\mathbf{u^*}$ solving the associated regularised problem satisfies $\|\mathbf{u^*}\| \le \|\mathbf{u}\|$ for any $\mathbf{u}$ solving the unregularised linear least squares problem}
 
-Let the states be stacked, such that $\mathbf{x}^u=(x_1,\dots,x_N)^\top$ and controls $\mathbf{u}=(u_1,\dots,u_N)^\top$. 
-
-Depending on $a,b,\bar x$, there exists $S\in\mathbb R^{N\times N},\mathbf{c}\in\mathbb R^N$
-such that
-\[
-\mathbf{x}^u=S\mathbf{u}+\mathbf{c}
-\]
-Hence the problem is equivalent to the Tikhonov problem
+The problem is equivalent to:
 $$\min_{\mathbf{u}\in\mathbb R^N} J_\gamma(\mathbf{u}):=\|S\mathbf{u}+\mathbf{c}\|_2^2+\gamma\|\mathbf{u}\|_2^2,\qquad \gamma>0$$
 
 The Hessian of $J_\gamma$ is $2(S^\top S+\gamma I)$ which is positive definite for $\gamma>0$, so $J_\gamma$ is strictly convex and admits a unique minimiser
-
 $$\mathbf{u}^*=-(S^\top S+\gamma I)^{-1}S^\top \mathbf{c}.$$
 
 Let $\mathbf{u}$ be any minimiser of the unregularised problem ($\gamma=0$). Since $\mathbf{u}^*$ minimises $J_\gamma$,
-
 $$\|S\mathbf{u}^*+\mathbf{c}\|^2+\gamma\|\mathbf{u}^*\|^2 \le \|S\mathbf{u}+\mathbf{c}\|^2+\gamma\|\mathbf{u}\|^2.$$
 
-But $\mathbf{u}$ minimises $\|S\mathbf{u}+\mathbf{c}\|^2$, hence $\|S\mathbf{u}+\mathbf{c}\|^2-\|S\mathbf{u}^*+\mathbf{c}\|^2\le 0$. Therefore
-
+Since $\mathbf{u}$ minimises $\|S\mathbf{u}+\mathbf{c}\|^2$, hence $\|S\mathbf{u}+\mathbf{c}\|^2-\|S\mathbf{u}^*+\mathbf{c}\|^2\le 0$. Therefore
 $$\gamma(\|\mathbf{u}^*\|^2-\|\mathbf{u}\|^2)\le 0,$$
-
 and so $\|\mathbf{u}^*\|\le\|\mathbf{u}\|$. This proves existence, uniqueness and the desired inequality.
 
 \textbf{Plotting optimal controls and associated trajectories}
@@ -203,6 +192,7 @@ The parameter $\gamma$ is a regularization weight that penalizes the magnitude o
 
 In summary, increasing $\gamma$ results in a less aggressive control policy and, consequently, a slower convergence of the state trajectory to its target. This demonstrates the fundamental trade-off in control theory between performance (fast convergence) and cost.
 
+\newpage
 \subsection*{II.b)}
 
 In this part, we consider a second system $(S')$ with dynamics:
@@ -254,6 +244,7 @@ The linear system is then solved to plot the optimal control vectors $\mathbf{u}
 \label{fig:dynopt_b}
 \end{figure}
 
+\newpage
 \subsection*{II.c)}
 
 Using the same parameters as in Part II.b, if we fix every parameter except for $\gamma$, we obtain different optimal solutions $(\mathbf{u}^*, \mathbf{v}^*)$ for each value of $\gamma$. We consider the two objective functionals:
@@ -261,27 +252,24 @@ Using the same parameters as in Part II.b, if we fix every parameter except for 
 \mathcal{J}_1(\gamma) &:= \|\mathbf{x}^*(\gamma)\|_2^2 + \|\mathbf{y}^*(\gamma)\|_2^2 \\
 \mathcal{J}_2(\gamma) &:= \|\mathbf{u}^*(\gamma) - \mathbf{v}^*(\gamma)\|_2^2
 \end{align*}
-By varying $\gamma$ from $10^{-5}$ to $10^5$ (with the exponent increasing in steps of $0.1$), we compute the corresponding optimal solutions and evaluate both functionals. The behaviour of each objective function with respect to $\gamma$, and the plots of $(\mathcal{J}_2(\gamma), \mathcal{J}_1(\gamma))$ are shown in Figure~\ref{fig:pareto_all}.
+By varying $\gamma$ from $10^{-5}$ to $10^5$ (with the exponent increasing in steps of $0.1$), we compute the corresponding optimal solutions and evaluate both functionals. The behaviour of each objective function with respect to $\gamma$, and the plot of $(\mathcal{J}_2(\gamma), \mathcal{J}_1(\gamma))$ (Pareto front) are shown in Figure~\ref{fig:pareto_all}.
 
 \textbf{Impact of $\gamma$ on the total cost:}
 
-The parameter $\gamma$ balances the two competing goals: keeping the system's internal state stable, measured by cost $J_1$, and sticking to an ideal control strategy, measured by cost $J_2$. 
+The parameter $\gamma$ balances the two competing goals: keeping the system's internal state stable, measured by cost $\mathcal{J}_1$, and sticking to an ideal control strategy, measured by cost $\mathcal{J}_2$. 
 
 The plots show a direct trade-off:
 \vspace{-1em}
 \begin{itemize}
-\item{When $\gamma$ is small, the priority is keeping the system stable, which makes $J_1$ low but requires deviating from the ideal control plan, making $J_2$ high.}
-\item{Conversely, when $\gamma$ is large, the priority shifts to following the ideal control plan almost perfectly, which makes $J_2$ low at the expense of system stability, causing $J_1$ to be high.}
+\item{When $\gamma$ is small, the priority is keeping the system stable, which makes $\mathcal{J}_1$ low but requires deviating from the ideal control plan, making $\mathcal{J}_2$ high.}
+\item{Conversely, when $\gamma$ is large, the priority shifts to following the ideal control plan almost perfectly, which makes $\mathcal{J}_2$ low at the expense of system stability, causing $\mathcal{J}_1$ to be high.}
 \end{itemize}
 \vspace{-1em}
-The Pareto front shows the fundamental trade-off: we cannot simultaneously minimize both state deviations and control coordination. An appropriate $\gamma$ is a design choice to balance the importance between the two objectives.
-
+The Pareto front shows the fundamental trade-off: we cannot simultaneously minimize both state deviations and control coordination. The selection of $\gamma$ is therefore a critical design choice that determines the desired balance between these competing objectives.                                                            
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\textwidth]{plots/j1_vs_gamma.png}
-\includegraphics[width=0.75\textwidth]{plots/j2_vs_gamma.png}
-\includegraphics[width=0.75\textwidth]{plots/pareto_front.png}
-\caption{Pareto front for the multi-objective optimisation problem.}
+\includegraphics[width=0.95\textwidth]{plots/pareto_all.png}
+\caption{$\mathcal{J}_1$, $\mathcal{J}_2$ and the Pareto front for the multi-objective optimisation problem.}
 \label{fig:pareto_all}
 \end{figure}
 
@@ -363,14 +351,15 @@ Using the same parameters as Part II.b, we compare the resulting control signals
 \caption{Control signals and state trajectories for the three cases.}
 \label{fig:L1_controls_states}
 \end{figure}
-\textbf{Observations:}
 \vspace{-1em}
+\textbf{Observations:} (need to go over case iii part)
 \begin{itemize}
-    \item \textbf{Case i ($\gamma_1=0, \gamma_2=1, \epsilon=1$):} With a pure $\ell_2$ penalty, the problem is equivalent to Part II.b. The gradient descent converges to the analytical solution, yielding smooth control signals $\mathbf{u}$ and $\mathbf{v}$ that closely follow each other but are not identical. Both controls work together to effectively drive the state trajectories to zero. The resulting state trajectories show a smooth exponential decay towards zero.
-    
-    \item \textbf{Case ii ($\gamma_1=1, \gamma_2=0, \epsilon=1$):} Here, a smoothed $\ell_1$-style regularizer is used. However, with a large smoothing parameter ($\epsilon=1$), the penalty function $L_\epsilon$ has a wide quadratic region, making it behave very similarly to an $\ell_2$ norm. As a result, the control signals are almost indistinguishable from those in Case (i), pulling the controls together but not enforcing true sparsity. Similar to Case (i), the state trajectories also exhibit a smooth decay towards zero.
+    \item \textbf{Case i ($\gamma_1=0, \gamma_2=1, \epsilon=1$):} Here, the objective function reduces to the pure $\ell_2$ regularization problem from Part II.b, and the plots are visually identical. This shows that the gradient descent implementation, given sufficient iterations, is successfully converging to the true analytical solution. The plot shows that both controls u and v are smooth and follow each other closely, but are not identical, effectively driving both state trajectories to zero.
 
-    \item \textbf{Case iii ($\gamma_1=1, \gamma_2=0, \epsilon=0.1$):} Reducing the smoothing parameter to $\epsilon=0.1$ makes the regularizer approximate the true $\ell_1$ norm more closely, which promotes sparsity in the difference $\mathbf{u}-\mathbf{v}$. This has a dramatic effect on the control strategy. The optimizer finds that the most efficient way to achieve the objective is to apply a single, large control impulse with $\mathbf{u}$ at the first time step, while keeping $\mathbf{v}$ close to zero for all time. After the initial impulse, both controls remain near zero. This strategy makes the difference $\mathbf{u}-\mathbf{v}$ sparse (non-zero only at the start) while still successfully driving both states to zero. The state trajectories for this case are notably different in their initial behaviour compared to the other cases. They exhibit a sharper, more immediate decrease in value, reflecting the highly impulsive control strategy. Despite this initial difference, the objective of driving the states to zero is still effectively achieved.
+    
+    \item \textbf{Case ii ($\gamma_1=1, \gamma_2=0, \epsilon=1$):} In this case a smoothed $\ell_1$-style regularizer is used. However, with a large smoothing parameter ($\epsilon=1$), the penalty function $L_\epsilon$ has a wide quadratic region, making it behave very similarly to an $\ell_2$ norm. As a result, the control signals are almost indistinguishable from those in Case (i), pulling the controls together but not enforcing true sparsity. Similarly to Case (i), the state trajectories exhibit a smooth decay towards zero.
+
+    \item \textbf{Case iii ($\gamma_1=1, \gamma_2=0, \epsilon=0.1$):} Reducing the smoothing parameter to $\epsilon=0.1$ makes the regularizer approximate the true $\ell_1$ norm more closely, which promotes sparsity in the difference $\mathbf{u}-\mathbf{v}$. This has a dramatic effect on the solution. The optimizer finds that the most efficient way to achieve the objective is to apply a single, large control impulse with $\mathbf{u}$ at the first time step, while keeping $\mathbf{v}$ close to zero for all time. After the initial impulse, both controls remain near zero. This strategy makes the difference $\mathbf{u}-\mathbf{v}$ sparse (non-zero only at the start) while still successfully driving both states to zero. The state trajectories for this case are notably different in their initial behaviour compared to the other cases. They exhibit a sharper, more immediate decrease in value, reflecting the highly impulsive control strategy. Despite this initial difference, the objective of driving the states to zero is still effectively achieved.
 \end{itemize}
 \vspace{-1em}
 \end{document}
