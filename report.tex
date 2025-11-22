@@ -1,365 +1,282 @@
 \documentclass{article}
-\usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage{geometry}
+\usepackage{amsmath} % For advanced math environments
+\usepackage{graphicx} % To include figures
+\usepackage{booktabs} % For professional-looking tables
+\usepackage{geometry} % To set page margins
+\usepackage{amssymb} % For \mathbb and other symbols
 \usepackage{float}
-\usepackage{amssymb}
-\usepackage{tikzlings,tikzducks}
-\usepackage{fancyhdr}
-\geometry{a4paper, margin=1in}
-\pagestyle{fancy}
-
-\fancyhead[L]{\textit{Optimisation Coursework}}
-\fancyhead[R]{\textit{CID: 02238728, 02211542, 06062738}}
-\fancyfoot[C]{\tikz[scale=0.4]{\tikzling[signpost={\thepage}]}}
-\setlength{\footskip}{40pt}
-
-\usepackage{lipsum}
 \geometry{a4paper, margin=1in}
 \setlength{\parskip}{1em} % vertical space between paragraphs
 \setlength{\parindent}{0pt} % remove indentation
 
-\title{MATH60005/70005 Optimisation Coursework}
-\author{CID: 02238728, 02211542, 06062738}
-\date{\vspace{-1em}}
+\title{Computational Linear Algebra: Coursework 1 Report}
+\author{CID: 02238728 / ID: us322}
+\date{\today}
 
 \begin{document}
 
 \maketitle
 
-\section*{Part I: Gradient-Enhanced Polynomial Regression}
+\section*{Task 1: Polynomial Fitting}
 
-\subsection*{I.a)}
- 
-The general problem is to approximate a function $V(x)$ using a model of the form 
-\[
-V_\theta(x) = \sum_{j=1}^{n} \theta_j \phi_j(x) = \Phi(x)^T \mathbf{\theta}
-\]
-where $\Phi(x) = (\phi_1(x), \ldots, \phi_n(x))$ is a vector of $n$ known basis functions, and $\mathbf{\theta} = (\theta_1, \ldots, \theta_n)^T \in \mathbb{R}^{n}$ is the vector of coefficients to be learned.
+\subsection*{(a) Formulation of the Weighted Least Squares Problem}
 
-Given $m$ training data points $(x_i, V(x_i))$, this can be formulated as a linear least squares problem:
-\[
-\min_{\mathbf{\theta} \in \mathbb{R}^{n}} \|\mathbf{A}\mathbf{\theta} - \mathbf{b}\|_2^2
-\]
-In general, $\mathbf{A}$ consists of the basis functions evaluated at the corresponding data points $x_i$:
-\[
-A = \begin{pmatrix} \phi_1(x_1) & \phi_2(x) & \cdots & \phi_{n}(x_1) \\ \phi_1(x_2) & \phi_2(x) & \cdots & \phi_{n}(x_2) \\ \vdots & \vdots & \ddots & \vdots \\ \phi_1(x_m) & \phi_2(x_m) & \cdots & \phi_{n}(x_m) \end{pmatrix} 
-\]
-The vector $\mathbf{b}$ contains the observed values $V(x_i)$:
-\[
-\mathbf{b}= \begin{pmatrix} V(x_1) \\ V(x_2) \\ \vdots \\ V(x_m) \end{pmatrix}
-\]
-For this specific problem, as per the instructions, we use the $n$-dimensional monomial basis $\Phi(x) = (1, x, x^2, \ldots, x^{n-1})^T$. This results in a polynomial approximation of degree $n-1$.
+The objective is to fit a polynomial $p(t)$ to a set of noisy measurements $y_i$ at points $t_i$. The noise is applied such that the measurements in the second half of the interval are much noisier.
 
-This means the $m \times n$ matrix $A$ becomes the Vandermonde matrix corresponding to this basis:
+The weighted least squares method seeks to find the coefficients of the polynomial, $c_0, \dots, c_n$, that minimize the weighted sum of squared residuals with weights $w_i$:
 \[
-A = \begin{pmatrix}
-1 & x_1 & x_1^2 & \cdots & x_1^{n-1} \\
-1 & x_2 & x_2^2 & \cdots & x_2^{n-1} \\
+\min_{c_0, \dots, c_n} \sum_{i=1}^{m} w_i (p(t_i) - y_i)^2
+\]
+where the polynomial $p(t)$ is defined as:
+\[
+p(t) = \sum_{j=0}^{n} c_j t^j
+\]
+This minimization problem can be formulated as a linear algebra problem. The Vandermonde matrix $A$, the coefficient vector $c$, and the observation vector $y$ are defined as follows:
+\[
+A = 
+\begin{pmatrix}
+1 & t_1 & t_1^2 & \dots & t_1^n \\
+1 & t_2 & t_2^2 & \dots & t_2^n \\
 \vdots & \vdots & \vdots & \ddots & \vdots \\
-1 & x_m & x_m^2 & \cdots & x_m^{n-1}
+1 & t_m & t_m^2 & \dots & t_m^n
+\end{pmatrix},
+\quad
+c = 
+\begin{pmatrix}
+c_0 \\ c_1 \\ \vdots \\ c_n
+\end{pmatrix},
+\quad
+y = 
+\begin{pmatrix}
+y_1 \\ y_2 \\ \vdots \\ y_m
 \end{pmatrix}
 \]
-We iterate through polynomial degrees $n=1, 2, \dots, 20$ (or in this case, $n-1 = 0, \ldots, 19$), solve for $\mathbf{\theta}$ using 1-d function data given in \texttt{trainingIa.dat}, and then calculate the MSE on the validation data \texttt{validationIa.dat}. Plotting the MSE against the polynomial degree $n$ in Figure~\ref{fig:mse_vs_degree} shows that the smallest degree for which the MSE is less than $10^{-3}$ is ${n=9}$.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{plots/mse_vs_degree.png}
-\caption{MSE values for varying polynomial degree $n$}
-\label{fig:mse_vs_degree}
-\end{figure}
-
-Fixing the value of $n=9$, we plot the MSE on the validation data versus the number of training points. Figure~\ref{fig:mse_vs_size_a} shows that, as expected, the error generally decreases as we use more training data. Figure~\ref{fig:learned_function_a} shows the final learned function plotted against the training and validation data.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{plots/mse_vs_training_size_a.png}
-\caption{MSE on validation data vs. number of training points at fixed $n=9$ for Part I.a}
-\label{fig:mse_vs_size_a}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{plots/learned_function_a.png}
-\caption{Learned polynomial function at $n=9$ for Part I.a}
-\label{fig:learned_function_a}
-\end{figure}
-
-
-\subsection*{I.b)}
-
-In this part, we augment the training data with gradient information. Using the same model $V_\theta(x)$ and monomial basis $\Phi(x) = (1, x, x^2, \ldots, x^{n-1})^T$, we reformulate the linear least squares problem to incorporate both function values and gradient data $\frac{dV}{dx}(x_i)$ from \texttt{trainingIb.dat}.
-
-The gradient of the model is:
+The problem is then equivalent to minimizing the 2-norm 
 \[
-\frac{dV_\theta}{dx} = \sum_{j=1}^{n} j \theta_j x^{j-1}
+\| W(Ac - y) \|_2^2
 \]
-We construct a stacked system:
+The matrix $W$ must be chosen such that $W^T W$ is the diagonal matrix of weights $w_i$. Since the weights are given by $w_i = 1/\sigma_i^2$, where $\sigma_i$ is the standard deviation of the noise at measurement $i$, the entries are equal to the square root of the weights:
 \[
-\min_{\mathbf{\theta}} \left\| \begin{bmatrix} A_{\text{fit}} \\ A_{\text{grad}} \end{bmatrix} \mathbf{\theta} - \begin{bmatrix} \mathbf{b}_{\text{fit}} \\ \mathbf{b}_{\text{grad}} \end{bmatrix} \right\|_2^2
+W_{ii} = \sqrt{w_i} = \sqrt{1/\sigma_i^2} = 1/\sigma_i
 \]
-where $A_{\text{fit}}$ is the Vandermonde matrix as before, $A_{\text{grad}}$ has entries $(A_{\text{grad}})_{ij} = j \cdot x_i^{j-1}$ for $j \geq 1$ and 0 for $j=0$, $\mathbf{b}_{\text{fit}}$ contains the function values, and $\mathbf{b}_{\text{grad}}$ contains the gradient values.
+By setting $A^\prime = WA$ and $y^\prime = Wy$, the problem transforms into a standard least squares problem:
+\[
+\min_{c} \| A^\prime c - y^\prime \|_2^2
+\]
+The implementation for this is provided in the function \texttt{solve\_wls()} in the file \texttt{cw1/q1.py}.
 
-Repeating the analysis from Part I.a, we find that the smallest degree $n$ for which the MSE on the validation data is less than $10^{-3}$ remains at $\mathbf{n=9}$, as shown in Figure~\ref{fig:mse_comparison}.
+\newpage
+\subsection*{(b) Weighted Least Squares Fit (n=5)}
+
+The weighted least squares problem, $\min_{c} \|A^\prime c - y^\prime\|_2$, can be solved using QR factorization, yielding $A^\prime = QR$. This transforms the problem into minimizing
+\[
+\|QRc - y^\prime\|_2
+\]
+which is equivalent to solving the upper triangular system 
+\[
+Rc = Q^T y^\prime
+\]
+The $R$ and $Q^T y^\prime$ matrices can be obtained directly from the QR factorization of an augmented matrix $A_{aug} = [A^\prime | y^\prime]$.  If we compute the factorization $A_{aug} = Q_{aug}R_{aug}$, then the upper triangular matrix $R$ for the original system is the leading $(n+1) \times (n+1)$ block of $R_{aug}$, and the vector $Q^T y^\prime$ is given by the first $(n+1)$ entries of the last column of $R_{aug}$. 
+The above upper triangular system is then constructed and solved for the coefficient vector $c_5$ using the \texttt{cla\_utils.solve\_U} function. The resulting polynomial fit is found by passing the coefficients through the \texttt{np.poly1d()} function. This implementation is found in the \texttt{solve\_wls()} function in \texttt{cw1/q1.py}.
+
+To quantify the quality of the polynomial fit, the weighted mean squared error (WMSE) between the fit $p(t)$ and the noisy data $y$ is computed
+\[
+\text{WMSE} = \frac{1}{m} \sum_{i=1}^{m} \frac{(p(t_i) - y_i)^2}{\sigma_i^2}
+\]
+for the $i$-th sample points $t_i$. A lower WMSE value indicates a better fit to the data.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{plots/mse_comparison.png}
-\caption{MSE for varying polynomial degree $n$, with and without gradient information}
-\label{fig:mse_comparison}
+\includegraphics[width=0.64\textwidth]{plots/plot_Weighted least squares fit for m=20, n=5.png}
+\caption{Weighted least squares fit for $m=20$, $n=5$.}
+\label{fig:n5_fit}
 \end{figure}
 
-The inclusion of gradient information significantly improves the conditioning of the problem. The MSE curve is smoother and achieves lower errors across the polynomial degrees beyond $n=9$. This is because gradient information provides additional constraints that help the optimization better capture the true underlying function.
+The $n=5$ polynomial fit is plotted with the noisy data and true function in Figure \ref{fig:n3_fit}. The polynomial fits the data poorly, particularly in the second half of the interval, where the data is most noisy.
 
-Figure~\ref{fig:mse_vs_size_comparison} compares the MSE against the number of training points for both methods. The model that includes gradient information consistently achieves a lower validation error, indicating that it generalises better.
+To investigate effect of increasing the number of sample points $m$ on the quality of the fit, we use a for loop to generate data points for varying $m$ values and compute the $n=5$ polynomial fit and corresponding WMSE for each $m$ value. The WMSE values are plotted against the $m$ values in Figure \ref{fig:m_vary}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{plots/mse_vs_training_size_comparison.png}
-\caption{MSE on validation data vs. number of training points (fixed $n=9$), with and without gradient information}
-\label{fig:mse_vs_size_comparison}
+\includegraphics[width=0.625\textwidth]{plots/plot_WMSE_vs_m.png}
+\caption{Effect of WMSE on varying number of sample points, m}
+\label{fig:m_vary}
 \end{figure}
 
-Despite the improved MSE, the final learned function shown in Figure \ref{fig:learned_function} is visually identical to the one learned without gradient information, suggesting both models successfully capture the function's overall shape. Incorporating the gradient information does not lead to a significant improvement in the final approximation of the function.
+As we increase $m$, the WMSE generally decreases up to a point. This is because as $m$ increases, the larger sample better represents the underlying noise distribution, particularly in the noisier second half of the interval, and the polynomial coefficients stabilize. The WMSE appears to converge for $m>1000$ as random fluctuations average out with more data points.
+
+\subsection*{(c) Weighted Least Squares Fit (n=3)}
+
+For $n=3$, the problem can be solved efficiently by reusing the factorization computed for $n=5$. The upper triangular matrix $R_3$ is the leading $4 \times 4$ block of $R_5$ (which itself is a block of $R_{aug,5}$). Similarly, the vector $Q_3^T y'$ corresponds to the first four entries of the vector $Q_5^T y'$. Both of these components can be extracted directly from the $R_{aug,5}$ matrix computed previously. The coefficients $c_3$, and therefore the polynomial fit, are then found by solving the resulting triangular system $R_3 C_3 = Q_3^T y^\prime$ as before.
+
+As expected, the $n=3$ polynomial poorly fits the data points with a significantly higher WMSE value.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{plots/learned_function_with_gradient.png}
-\caption{Learned polynomial function at $n=9$ with gradient information}
-\label{fig:learned_function}
+\includegraphics[width=0.64\textwidth]{plots/plot_Comparison of weighted least squares fits (n=5 and n=3).png}
+\caption{Comparison of weighted least squares fits for $n=3,5$.}
+\label{fig:n3_fit}
+\end{figure}
+
+\subsection*{(d) Weighted Least Squares Fit (n=7)}
+
+To solve for $n=7$, the existing QR factorization for $n=5$ is extended efficiently without recomputing from scratch. The weighted Vandermonde matrix $A^\prime_7$ is partitioned as a block matrix:
+\[
+A^\prime_7 = [A^\prime_5 \mid A^\prime_{2}]
+\]
+where $A^\prime_5 \in \mathbb{R}^{m \times 6}$ contains the already factorized columns for powers $t^0, \dots, t^5$, and $A^\prime_{2} \in \mathbb{R}^{m \times 2}$ contains the new columns for $t^6$ and $t^7$.
+
+As we already have $A^\prime_5 = Q_5 R_5$ from part (b), we seek a block QR factorization of the form:
+\[
+A^\prime_7 = [Q_5 \mid Q_{2}] \begin{bmatrix} R_5 & R_{12} \\ 0 & R_{22} \end{bmatrix} = Q_7 R_7
+\]
+where $Q_{2} \in \mathbb{R}^{m \times 2}$ contains orthonormal columns orthogonal to $Q_5$, and $R_7 \in \mathbb{R}^{8 \times 8}$ is the extended upper triangular matrix.
+
+The upper-right block is computed by projecting the new columns onto the existing basis:
+\[
+R_{12} = Q_5^T A^\prime_{2}
+\]
+The new columns are then orthogonalized against $Q_5$. The remaining part after removing the projection onto $Q_5$ is given by:
+\[
+A^\prime_{2} - Q_5 R_{12}
+\]
+Applying Gram-Schmidt to this remaining part yields $Q_{2}$ and $R_{22}$. The right-hand side vector $Q_7^T y^\prime$ is constructed block-wise without forming the full $Q_7$ matrix:
+\[
+Q_7^T y^\prime = \begin{bmatrix} Q_5^T y^\prime \\ Q_{2}^T y^\prime \end{bmatrix}
+\]
+where $Q_5^T y^\prime$ is already available from the augmented factorization in part (b), and only $Q_{2}^T y^\prime$ needs to be computed through Modified Gram-Schmidt. The polynomial fit is then determined by solving the upper triangular system $R_7 c_7 = Q_7^T y^\prime$. To confirm the validity of this approach, the coefficients are also verified with the direct approach as used in part (b).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.64\textwidth]{plots/plot_Comparison of fits for larger dataset (n=3, n=5, and n=7).png}
+\caption{Comparison of weighted least squares fits ($n=3,5,7$) for larger dataset ($m=100$)}
+\label{fig:n7_comparison}
+\end{figure}
+
+The polynomial fits for $n=3,5,7$ are visualized together for a larger dataset ($m=100$) in Figure \ref{fig:n7_comparison} for comparison. The WMSE values suggest that the fit improves significantly with $n=7$. However, while the $n=7$ polynomial fits the data for $t<0.5$ very well, it fails to reflect the noisy distribution in the second half of the interval. The $n=5$ fit is also the only polynomial to fit the noisy data in the $t>0.8$ tail region well.
+
+\subsection*{(e) Comparison with Unweighted Least Squares Solution}
+
+The unweighted least squares problem is a special case of the weighted version where $w_i=1$. In this case, the weighting matrix $W$ becomes the identity matrix, and the problem simplifies to the standard least squares formulation:
+\[
+\min_{c} \| Ac - y \|_2^2
+\]
+The \texttt{solve\_wls()} function implements this by defaulting to \texttt{sigma=None}, such that when no sigma is provided, sigma is initialized to an array of ones, equivalent to setting $w_i=1$. 
+
+Figure \ref{fig:noise_grid} shows the weighted and unweighted fits for varying polynomial degrees ($n=3,5,7$) and noise scales ($1.0,3.0,5.0$). To quantitatively compare the quality of the fits, both methods are evaluated using the weighted mean squared error (WMSE) with the same weights $w_i = 1/\sigma_i^2$.
+
+The weighted LS achieves consistently lower WMSE than unweighted LS across all polynomial degrees and noise scales. Visually, the weighted LS fit follows the less noisy data in the first half ($t<0.5$) more closely, while the unweighted LS achieves a more balanced fit across the entire interval. This is because the unweighted approach assigns equal importance to all data points, whereas the weighted approach assigns higher importance to data points with lower variance (i.e., more reliable measurements). As noise scale increases, both methods struggle, particularly in the second half ($t>0.5$) of the interval.
+
+The choice of weights $w_i = 1/\sigma_i^2$ is statistically justified when measurement reliability varies significantly, and is therefore appropriate in our case where the data is much noisier in the second half of the interval.
+\begin{figure}[H]
+\centering
+\begin{tabular}{ccc}
+\includegraphics[width=0.317\textwidth]{plots/plot_n=3, noise scale = 1.0.png} &
+\includegraphics[width=0.317\textwidth]{plots/plot_n=3, noise scale = 3.0.png} &
+\includegraphics[width=0.317\textwidth]{plots/plot_n=3, noise scale = 5.0.png} \\
+\includegraphics[width=0.317\textwidth]{plots/plot_n=5, noise scale = 1.0.png} &
+\includegraphics[width=0.317\textwidth]{plots/plot_n=5, noise scale = 3.0.png} &
+\includegraphics[width=0.317\textwidth]{plots/plot_n=5, noise scale = 5.0.png} \\
+\includegraphics[width=0.317\textwidth]{plots/plot_n=7, noise scale = 1.0.png} &
+\includegraphics[width=0.317\textwidth]{plots/plot_n=7, noise scale = 3.0.png} &
+\includegraphics[width=0.317\textwidth]{plots/plot_n=7, noise scale = 5.0.png} \\
+\end{tabular}
+\caption{Comparison of weighted and unweighted least squares fits for different polynomial degrees ($n=3, 5, 7$) and noise scales ($1.0, 3.0, 5.0$).}
+\label{fig:noise_grid}
 \end{figure}
 
 \newpage
-\section*{Part II: A First Approach to Dynamic Optimisation}
+\section*{Task 2: Orthogonality of QR Factorizations}
 
-\subsection*{II.a)}
+\subsection*{(a) Implementing QR Factorization Variants}
 
-The dynamic optimisation problem is given by:
-\[ \min_{\mathbf{u} \in \mathbb{R}^N} \|\mathbf{x}^u\|_2^2 + \gamma \|\mathbf{u}\|_2^2 \]
-subject to $x_0 = \bar{x}$, $x_i = a x_{i-1} + b u_i$ for $i=1, \dots, N$.
-
-We can express the state $\mathbf{x}^u$ in terms of the control $\mathbf{u}$ by unrolling the dynamics:
-\begin{align*}
-x_1 &= ax_0 + bu_1 = a\bar{x} + bu_1 \\
-x_2 &= ax_1 + bu_2 = a^2\bar{x} + abu_1 + bu_2 \\&\vdots \\x_i &= a^i\bar{x} + b\sum_{j=1}^{i} a^{i-j}u_j
-\end{align*}
-This can be written in matrix form as $\mathbf{x}^u = S \mathbf{u} + \mathbf{c}$, such that the objective function becomes:
-\[
-\|S\mathbf{u} + \mathbf{c}\|_2^2 + \gamma \|\mathbf{u}\|_2^2
-\]
-Taking the gradient with respect to $\mathbf{u}$ and setting to zero gives the normal equations which we can solve.
-\[ (S^T S + \gamma I) \mathbf{u} = -S^T \mathbf{c} \]
-
-\textbf{Discussion of existence and uniqueness:}
-
-For $\gamma > 0$, the matrix $S^T S + \gamma I$ is symmetric and positive definite since $S^T S$ is positive semi-definite and $\gamma I$ adds positive eigenvalues. Therefore, the matrix is invertible, which guarantees a unique solution $\mathbf{u}^*$ to this problem.
-
-For $\gamma = 0$, uniqueness depends on the rank of $S$. If $S$ is full rank, which it is in our case since $b \neq 0$, then $S^T S$ is positive definite and a unique solution exists.
-
-\textbf{Proof: Any $\mathbf{u^*}$ solving the associated regularised problem satisfies $\|\mathbf{u^*}\| \le \|\mathbf{u}\|$ for any $\mathbf{u}$ solving the unregularised linear least squares problem}
-
-The problem is equivalent to:
-$$\min_{\mathbf{u}\in\mathbb R^N} J_\gamma(\mathbf{u}):=\|S\mathbf{u}+\mathbf{c}\|_2^2+\gamma\|\mathbf{u}\|_2^2,\qquad \gamma>0$$
-
-The Hessian of $J_\gamma$ is $2(S^\top S+\gamma I)$ which is positive definite for $\gamma>0$, so $J_\gamma$ is strictly convex and admits a unique minimiser
-$$\mathbf{u}^*=-(S^\top S+\gamma I)^{-1}S^\top \mathbf{c}.$$
-
-Let $\mathbf{u}$ be any minimiser of the unregularised problem ($\gamma=0$). Since $\mathbf{u}^*$ minimises $J_\gamma$,
-$$\|S\mathbf{u}^*+\mathbf{c}\|^2+\gamma\|\mathbf{u}^*\|^2 \le \|S\mathbf{u}+\mathbf{c}\|^2+\gamma\|\mathbf{u}\|^2.$$
-
-Since $\mathbf{u}$ minimises $\|S\mathbf{u}+\mathbf{c}\|^2$, hence $\|S\mathbf{u}+\mathbf{c}\|^2-\|S\mathbf{u}^*+\mathbf{c}\|^2\le 0$. Therefore
-$$\gamma(\|\mathbf{u}^*\|^2-\|\mathbf{u}\|^2)\le 0,$$
-and so $\|\mathbf{u}^*\|\le\|\mathbf{u}\|$. This proves existence, uniqueness and the desired inequality.
-
-\textbf{Plotting optimal controls and associated trajectories}
-
-For $N = 50$, $a = 1$, $b = -0.01$, $\bar{x} = 1$, the plots of the optimal control signals and state trajectories for different values of $\gamma = 10^{-3}, 10^{-2}, 0.1, 1$ are shown in Figure~\ref{fig:dynopt_a}.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{plots/dynamic_optimisation_a.png}
-\caption{Optimal control and state trajectories for different values of $\gamma$.}
-\label{fig:dynopt_a}
-\end{figure}
-
-The parameter $\gamma$ is a regularization weight that penalizes the magnitude of the control input, represented by the term $\gamma |u|^2$. It controls the trade-off between driving the state $x$ to zero and conserving control energy.
+Five variants of QR factorization were implemented, with the Classical and Modified Gram-Schmidt, as well as the Householder algorithm, reused from the \texttt{cla\_utils} library. The Double and Triple Gram-Schmidt methods are enhancements designed to counteract the loss of orthogonality that occurs in Classical Gram-Schmidt (CGS) due to round-off errors. The code in \texttt{cw1/q2.py} implements the DGS and TGS algorithms using an iterated Gram-Schmidt function, \texttt{iterated\_GS()}, that accepts a specified number of orthogonalization steps and follows the algorithm provided in the coursework instructions.
 
 \begin{itemize}
-\item \textbf{Effect on the Optimal Control ($\mathbf{u^*}$):} As $\gamma$ increases, the penalty on using large control inputs becomes more severe. Consequently, the magnitude of the optimal control signal decreases significantly. For a very small $\gamma = 0.001$, the control starts at a high value (around $27$) to aggressively steer the state. In contrast, for a large $\gamma = 1$, the control signal is very small (less than $1$) for all time steps, as minimizing control effort is heavily prioritized.
-
-\item \textbf{Effect on the Optimal Trajectory ($\mathbf{x}^{u*}_{\bar{x}}$):} The reduction in control effort for larger $\gamma$ values directly impacts the system's ability to change the state. When $\gamma$ is small, the large control signal rapidly drives the state trajectory towards zero. As $\gamma$ increases, the convergence of the state to zero becomes progressively slower. For $\gamma = 1$, the state barely moves from its initial condition of $x_0 = 1$ because the applied control is too weak.
+    \item{\textbf{Double Gram-Schmidt (DGS)} performs the CGS process twice for each vector. The second pass (re-orthogonalization) removes any remaining components in the direction of the basis vectors not eliminated in the first pass due to numerical inaccuracies.}
+    \item{\textbf{Triple Gram-Schmidt (TGS)} extends this idea by performing the re-orthogonalization step a second time, for a total of three passes.}
 \end{itemize}
 
-In summary, increasing $\gamma$ results in a less aggressive control policy and, consequently, a slower convergence of the state trajectory to its target. This demonstrates the fundamental trade-off in control theory between performance (fast convergence) and cost.
+\subsection*{(b) Orthogonality Error Results}
+For each of the five Gram-Schmidt variants, $A=QR$ was factorized, and $orth = ||Q^TQ-I||_2$ was computed.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lc}
+\toprule
+\textbf{Method} & \textbf{$\lVert Q^T Q - I\rVert_2$} \\
+\midrule
+Classical GS    & $9.29\times 10^{1}$ \\
+Modified GS     & $4.93\times 10^{-10}$ \\
+Double GS       & $4.37\times 10^{-15}$ \\
+Triple GS     & $4.29\times 10^{-15}$ \\
+Householder       & $1.41\times 10^{-14}$ \\
+\bottomrule
+\end{tabular}
+\label{table_1}
+\caption{Orthogonality Error for QR Variants}
+\end{table}
+
+\subsection*{(c) Discussion of Orthogonality Error}
+
+The Classical Gram-Schmidt (CGS) algorithm exhibits a very large orthogonality error ($\sim 10^{2}$), indicating significant loss of orthogonality due to the accumulation of rounding errors during the projection steps. In contrast, the Modified Gram-Schmidt (MGS) algorithm achieves a much smaller error ($\sim 10^{-10}$), as it performs projections in a more numerically stable order, thereby reducing the propagation of floating-point inaccuracies. The Householder method achieves an error $\sim 10^{-14}$, close to machine precision, as it constructs orthogonal reflectors that inherently maintain numerical stability. 
+
+The newly implemented Double Gram-Schmidt (DGS) method substantially improves upon the CGS algorithm by performing a re-orthogonalization pass, which effectively corrects for the loss of orthogonality from the first pass, resulting in accuracy comparable to that of the Householder algorithm. The Triple Gram-Schmidt (TGS) method yields a similar level of orthogonality to DGS ($\sim 10^{-15}$), showing that once machine precision has been reached, additional re-orthogonalization offers negligible improvement.
 
 \newpage
-\subsection*{II.b)}
+\section*{Mastery Question: Lower Triangular Factorization}
+\subsubsection*{CID: 02238728 / ID: us322}
 
-In this part, we consider a second system $(S')$ with dynamics:
+\subsection*{(a) Algorithm Derivation and Implementation}
+
+The objective is to construct an orthogonal matrix $Q \in \mathbb{R}^{m \times m}$ such that for a given matrix $A \in \mathbb{R}^{m \times n}$ (with $m \geq n$), the product $Q^T A$ has a lower trapezoidal structure:
 \[
-y_0 = \bar{y}, \quad y_i = cy_{i-1} + dv_i, \quad i=1,\ldots,N
-\]
-
-The multi-objective problem is:
-\[
-\min_{(\mathbf{u},\mathbf{v}) \in \mathbb{R}^{2N}} \|\mathbf{x}\|_2^2 + \|\mathbf{y}\|_2^2 + \gamma\|\mathbf{u} - \mathbf{v}\|_2^2
-\]
-
-where $\gamma>0$ and $\mathbf{x}$ and $\mathbf{y}$ are the trajectories of systems $(S_x)$ and $(S_y)$ respectively, driven by controls $\mathbf{u}$ and $\mathbf{v}$. Similarly to Part II.a, we can write $\mathbf{x} = S_x\mathbf{u} + \mathbf{c}_x$ and $\mathbf{y} = S_y\mathbf{v} + \mathbf{c}_y$.
-
-The objective becomes:
-\[
-\|S_x\mathbf{u} + \mathbf{c}_x\|_2^2 + \|S_y\mathbf{v} + \mathbf{c}_y\|_2^2 + \gamma\|\mathbf{u} - \mathbf{v}\|_2^2
-\]
-
-Taking gradients and setting to zero yields the coupled system:
-\begin{align*}
-(S_x^T S_x + \gamma I)\mathbf{u} - \gamma \mathbf{v} &= -S_x^T\mathbf{c}_x \\
--\gamma \mathbf{u} + (S_y^T S_y + \gamma I)\mathbf{v} &= -S_y^T\mathbf{c}_y
-\end{align*}
-This can be written as a block system:
-\[
+Q^T A =
 \begin{bmatrix}
-S_x^T S_x + \gamma I & -\gamma I \\
--\gamma I & S_y^T S_y + \gamma I
-\end{bmatrix}
-\begin{bmatrix}
-\mathbf{u} \\
-\mathbf{v}
-\end{bmatrix}
-=
-\begin{bmatrix}
--S_x^T\mathbf{c}_x \\
--S_y^T\mathbf{c}_y
+0 \\
+L
 \end{bmatrix}
 \]
-This block system has a unique solution because the matrix on the left-hand side is symmetric and positive definite for $\gamma > 0$. 
+where the zero block is $(m-n) \times n$ and $L \in \mathbb{R}^{n \times n}$ is lower triangular.
 
-The linear system is then solved to plot the optimal control vectors $\mathbf{u}^*$ and $\mathbf{v}^*$ for the parameters $N = 50$, $a = 1$, $b = 0.05$, $\bar{x} = 1$, $c = 0.2$, $d = -0.5$, $\bar{y} = 1$, $\gamma = 1$ in Figure~\ref{fig:dynopt_b}.
+The algorithm processes columns from right to left ($k = n-1, \dots, 0$), applying Householder reflectors $Q_k = I - 2vv^T$ to build the lower triangular structure. At iteration $k$, we extract $x = A[:m-n+k+1, k]$ and construct the normalized Householder vector $v = x + \text{sign}(x[-1])\|x\|e$, where $e$ is the last standard basis vector and $x[-1]$ denotes the last element of $x$. 
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{plots/dynamic_optimisation_b.png}
-\caption{Optimal state trajectories and control signals for the coupled system with $\gamma=1$.}
-\label{fig:dynopt_b}
-\end{figure}
-
-\newpage
-\subsection*{II.c)}
-
-Using the same parameters as in Part II.b, if we fix every parameter except for $\gamma$, we obtain different optimal solutions $(\mathbf{u}^*, \mathbf{v}^*)$ for each value of $\gamma$. We consider the two objective functionals:
+The matrices  $A$ and $Q$ are then updated via:
 \begin{align*}
-\mathcal{J}_1(\gamma) &:= \|\mathbf{x}^*(\gamma)\|_2^2 + \|\mathbf{y}^*(\gamma)\|_2^2 \\
-\mathcal{J}_2(\gamma) &:= \|\mathbf{u}^*(\gamma) - \mathbf{v}^*(\gamma)\|_2^2
+A &\leftarrow A - 2v(v^T A) \\
+Q &\leftarrow Q - 2(Qv)v^T
 \end{align*}
-By varying $\gamma$ from $10^{-5}$ to $10^5$ (with the exponent increasing in steps of $0.1$), we compute the corresponding optimal solutions and evaluate both functionals. The behaviour of each objective function with respect to $\gamma$, and the plot of $(\mathcal{J}_2(\gamma), \mathcal{J}_1(\gamma))$ (Pareto front) are shown in Figure~\ref{fig:pareto_all}.
+starting from $Q = I$. After all iterations, $Q = Q_{n-1} \cdots Q_1 Q_0$, and $A$ is transformed into $Q^T A$.
 
-\textbf{Impact of $\gamma$ on the total cost:}
+This algorithm is implemented in the function \texttt{householder\_ql()} in the \texttt{cw1/mastery.py} script.
 
-The parameter $\gamma$ balances the two competing goals: keeping the system's internal state stable, measured by cost $\mathcal{J}_1$, and sticking to an ideal control strategy, measured by cost $\mathcal{J}_2$. 
+\subsection*{(b) Relation to QR Factorization of $A^T$}
 
-The plots show a direct trade-off:
-\vspace{-1em}
+We can partition the orthogonal matrix $Q$ into
+$Q = \begin{bmatrix} Q_1 & Q_2 \end{bmatrix}$, where $Q_1 \in \mathbb{R}^{m \times (m-n)}$ and $Q_2 \in \mathbb{R}^{m \times n}$.
+
+Left-multiplying the original equation by $Q$ gives:
+\[
+A = Q \begin{bmatrix} 0 \\ L \end{bmatrix} = \begin{bmatrix} Q_1 & Q_2 \end{bmatrix} \begin{bmatrix} 0 \\ L \end{bmatrix} = Q_2 L
+\]
+This is the (thin) QL factorization of $A$. Since $Q_2$ is an $m \times n$ matrix with orthonormal columns and $L$ is an $n \times n$ invertible matrix (assuming $A$ has full rank), this equation shows that every column of $A$ is a linear combination of the columns of $Q_2$.
+
+Therefore, the columns of $Q_2$ form an orthonormal basis for the column space of $A$, $\mathcal{C}(A)$.
+
+Now, consider the standard QR factorization of $A^T \in \mathbb{R}^{n \times m}$:
+\[
+A^T = \tilde{Q} \tilde{R}
+\]
+where $\tilde{Q} \in \mathbb{R}^{n \times n}$ is orthogonal and $\tilde{R} \in \mathbb{R}^{n \times m}$ is upper trapezoidal.
+
+By the definition of the QR factorization, the columns of $\tilde{Q}$ form an orthonormal basis for the column space of the matrix being factored, which in this case is $A^T$.
+
+Therefore, the columns of $\tilde{Q}$ form an orthonormal basis for the column space of $A^T$, $\mathcal{C}(A^T)$. By definition, the column space of $A^T$ is the row space of $A$, $\mathcal{R}(A)$.
+
+Hence the two Q-matrices, $Q$ and $\tilde{Q}$, are related through the fundamental subspaces of $A$. In summary,
 \begin{itemize}
-\item{When $\gamma$ is small, the priority is keeping the system stable, which makes $\mathcal{J}_1$ low but requires deviating from the ideal control plan, making $\mathcal{J}_2$ high.}
-\item{Conversely, when $\gamma$ is large, the priority shifts to following the ideal control plan almost perfectly, which makes $\mathcal{J}_2$ low at the expense of system stability, causing $\mathcal{J}_1$ to be high.}
+    \item The last $n$ columns of $Q$ (i.e., $Q_2$) provide an orthonormal basis for the column space of $A$.
+    \item The $n$ columns of $\tilde{Q}$ provide an orthonormal basis for the row space of $A$.
 \end{itemize}
-\vspace{-1em}
-The Pareto front shows the fundamental trade-off: we cannot simultaneously minimize both state deviations and control coordination. The selection of $\gamma$ is therefore a critical design choice that determines the desired balance between these competing objectives.                                                            
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{plots/pareto_all.png}
-\caption{$\mathcal{J}_1$, $\mathcal{J}_2$ and the Pareto front for the multi-objective optimisation problem.}
-\label{fig:pareto_all}
-\end{figure}
 
-\newpage
-\subsection*{II.d)}
-
-In this section, we promote sparsity in the control penalty through the inclusion of an $\ell_1$-norm penalty in the cost:
-\[
-\min_{(\mathbf{u},\mathbf{v}) \in \mathbb{R}^{2N}} \|\mathbf{x}\|_2^2 + \|\mathbf{y}\|_2^2 + \gamma_2\|\mathbf{u} - \mathbf{v}\|_2^2 + \gamma_1\|\mathbf{u} - \mathbf{v}\|_1
-\]
-
-\textbf{The meaning of $L_\epsilon(u_i)$ as a regulariser:}
-
-The $L_\epsilon(u_i)$ function provides an approximate and smoothed version of the $\ell_1$ penalty. It behaves quadratically near the origin and linearly away from it:
-\[
-L_\epsilon(u_i) = 
-\begin{cases}
-\frac{1}{2}u_i^2, & |u_i| \le \epsilon, \\[6pt]
-\epsilon\!\left(|u_i| - \tfrac12 \epsilon\right), & \text{otherwise}.
-\end{cases}
-\]
-
-As a regulariser, it encourages sparsity in the same way as the $\ell_1$ norm by pushing small coefficients toward zero. The quadratic region makes the function smooth at the origin, avoiding the non-differentiability of $|u_i|$ and making the optimisation problem more stable for gradient-based methods. For larger values, the linear part ensures the penalty grows like the absolute value.
-
-The function is differentiable everywhere, with derivative
-\[
-\frac{dL_\epsilon}{du_i} =
-\begin{cases}
-u_i, & |u_i| \le \epsilon, \\[6pt]
-\epsilon\,\mathrm{sign}(u_i), & \text{otherwise}.
-\end{cases}
-\]
-This continuous gradient is what allows $L_\epsilon$ to act as a smooth surrogate for the $\ell_1$ norm.
-
-\textbf{Implementation of Gradient Descent:}
-
-Since the $\ell_1$-norm is non-differentiable at zero, we cannot directly use standard gradient-based methods. Instead, replace the $\ell_1$-norm with its smooth approximation, $L_\epsilon$. The problem to solve then becomes:
-\[
-\min_{(\mathbf{u},\mathbf{v}) \in \mathbb{R}^{2N}} \|\mathbf{x}\|_2^2 + \|\mathbf{y}\|_2^2 + \gamma_2\|\mathbf{u} - \mathbf{v}\|_2^2 + \gamma_1\sum_{i=1}^N L_\epsilon(u_i - v_i)
-\]
-To solve the problem using Gradient Descent, we first define the full objective function, $J(\mathbf{u}, \mathbf{v})$, using the matrix forms of the state equations ($\mathbf{x} = S_x\mathbf{u} + \mathbf{c}_x$ and $\mathbf{y} = S_y\mathbf{v} + \mathbf{c}_y$):
-\[
-J(\mathbf{u}, \mathbf{v}) = \|S_x\mathbf{u} + \mathbf{c}_x\|_2^2 + \|S_y\mathbf{v} + \mathbf{c}_y\|_2^2 + \gamma_2\|\mathbf{u} - \mathbf{v}\|_2^2 + \gamma_1\sum_{i=1}^N L_\epsilon(u_i - v_i)
-\]
-The update rules of the method at each iteration $k$ are:
-\begin{align*}
-    \mathbf{u}_{k+1} &= \mathbf{u}_k - \alpha \nabla_{\mathbf{u}} J(\mathbf{u}_k, \mathbf{v}_k) \\
-    \mathbf{v}_{k+1} &= \mathbf{v}_k - \alpha \nabla_{\mathbf{v}} J(\mathbf{u}_k, \mathbf{v}_k)
-\end{align*}
-where $\alpha$ is the learning rate and the gradients, $\nabla_{\mathbf{u}} J$ and $\nabla_{\mathbf{v}} J$, are calculated as:
-\begin{align*}
-    \nabla_{\mathbf{u}} J &= 2 S_x^T (S_x \mathbf{u} + \mathbf{c}_x) + 2 \gamma_2 (\mathbf{u} - \mathbf{v}) + \gamma_1 \nabla L_\epsilon(\mathbf{u} - \mathbf{v}) \\
-    \nabla_{\mathbf{v}} J &= 2 S_y^T (S_y \mathbf{v} + \mathbf{c}_y) - 2 \gamma_2 (\mathbf{u} - \mathbf{v}) - \gamma_1 \nabla L_\epsilon(\mathbf{u} - \mathbf{v})
-\end{align*}
-To determine the optimal learning rate, the gradient descent algorithm was performed for each of the 3 given cases for varying learning rates. A maximum number of iterations of $20000$ is used such that the algorithm has ample time to converge, ensuring the final cost is representative of the learning rate's performance. The cost was found to converge early in all 3 cases, and an optimal learning rate of $0.1$ was determined.
- 
-\begin{figure}[H]
-\centering
-\includegraphics[width=.95\textwidth]{plots/learning_rate_comparison.png}
-\caption{Cost of gradient descent method against learning rate for all three cases.}
-\label{fig:lr_comparison}
-\end{figure}
-
-\textbf{Settings:}
-\vspace{-1em}
-\begin{itemize}
-    \item \textbf{Learning Rate:} The step size at each iteration was set to the optimal value of $\alpha = 0.1$. This value dictates how large of a step is taken in the direction of the negative gradient.
-    \item \textbf{Number of Iterations:} The algorithm was run for a total of $\text{5000}$ iterations. This was chosen to ensure sufficient convergence while managing computational cost.
-    \item \textbf{Initialization:} The initial control signals ($\mathbf{u}$ and $\mathbf{v}$) were initialized to a vector of zeros, i.e.,
-     $\mathbf{u}_{\text{init}} = \mathbf{0}$ and $\mathbf{v}_{\text{init}} = \mathbf{0}$.
-\end{itemize}
-\vspace{-1em}
-
-Using the same parameters as Part II.b, we compare the resulting control signals and state trajectories for the three cases in Figure~\ref{fig:L1_controls_states}.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=1.\textwidth]{plots/L1_combined.png}
-\caption{Control signals and state trajectories for the three cases.}
-\label{fig:L1_controls_states}
-\end{figure}
-\vspace{-1em}
-\textbf{Observations:} (need to go over case iii part)
-\begin{itemize}
-    \item \textbf{Case i ($\gamma_1=0, \gamma_2=1, \epsilon=1$):} Here, the objective function reduces to the pure $\ell_2$ regularization problem from Part II.b, and the plots are visually identical. This shows that the gradient descent implementation, given sufficient iterations, is successfully converging to the true analytical solution. The plot shows that both controls u and v are smooth and follow each other closely, but are not identical, effectively driving both state trajectories to zero.
-
-    
-    \item \textbf{Case ii ($\gamma_1=1, \gamma_2=0, \epsilon=1$):} In this case a smoothed $\ell_1$-style regularizer is used. However, with a large smoothing parameter ($\epsilon=1$), the penalty function $L_\epsilon$ has a wide quadratic region, making it behave very similarly to an $\ell_2$ norm. As a result, the control signals are almost indistinguishable from those in Case (i), pulling the controls together but not enforcing true sparsity. Similarly to Case (i), the state trajectories exhibit a smooth decay towards zero.
-
-    \item \textbf{Case iii ($\gamma_1=1, \gamma_2=0, \epsilon=0.1$):} Reducing the smoothing parameter to $\epsilon=0.1$ makes the regularizer approximate the true $\ell_1$ norm more closely, which promotes sparsity in the difference $\mathbf{u}-\mathbf{v}$. This has a dramatic effect on the solution. The optimizer finds that the most efficient way to achieve the objective is to apply a single, large control impulse with $\mathbf{u}$ at the first time step, while keeping $\mathbf{v}$ close to zero for all time. After the initial impulse, both controls remain near zero. This strategy makes the difference $\mathbf{u}-\mathbf{v}$ sparse (non-zero only at the start) while still successfully driving both states to zero. The state trajectories for this case are notably different in their initial behaviour compared to the other cases. They exhibit a sharper, more immediate decrease in value, reflecting the highly impulsive control strategy. Despite this initial difference, the objective of driving the states to zero is still effectively achieved.
-\end{itemize}
-\vspace{-1em}
 \end{document}
